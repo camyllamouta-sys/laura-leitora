@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#ff7eb6">
+<title>Laura Leitora</title>
+<style>
+:root{--rosa:#ff7eb6;--rosa2:#ffd1e6;--roxo:#7c4dff;--azul:#4fc3f7;--verde:#66d17a;--amar:#ffd54f;--laranja:#ffa04d;--tx:#3b2a5a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:"Trebuchet MS","Comic Sans MS",system-ui,sans-serif;color:var(--tx);background:linear-gradient(160deg,#fff0f8,#e6f4ff);min-height:100vh;user-select:none}
+#app{max-width:640px;margin:0 auto;padding:12px 16px 40px;min-height:100vh;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:10px;justify-content:space-between;margin-bottom:8px}
+.avatar{width:64px;height:64px;border-radius:50%;border:4px solid var(--rosa);background:var(--rosa2);object-fit:cover;display:flex;align-items:center;justify-content:center;font-size:36px;overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.stars{background:#fff;border-radius:30px;padding:8px 16px;font-weight:bold;font-size:20px;box-shadow:0 3px 0 #0001}
+h1{margin:6px 0;font-size:34px;text-align:center;color:var(--roxo);letter-spacing:1px}
+h2{text-align:center;margin:8px 0}
+.grid{display:grid;gap:14px;margin-top:10px}
+.g2{grid-template-columns:1fr 1fr}
+.btn{border:0;border-radius:24px;padding:18px 12px;font:inherit;font-size:24px;font-weight:bold;color:#fff;box-shadow:0 6px 0 #0003;cursor:pointer;transition:transform .08s}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 #0003}
+.big{padding:34px 12px;font-size:30px}
+.c1{background:var(--rosa)}.c2{background:var(--azul)}.c3{background:var(--verde)}.c4{background:var(--laranja)}.c5{background:var(--roxo)}.c6{background:#f06292}
+.back{background:#fff;color:var(--tx);font-size:18px;padding:10px 16px;border-radius:20px;border:0;box-shadow:0 3px 0 #0002;cursor:pointer;font-weight:bold}
+.card{background:#fff;border-radius:28px;padding:18px;box-shadow:0 6px 0 #0001;text-align:center;margin-top:10px}
+.emoji{font-size:96px;line-height:1.1}
+.q{font-size:26px;font-weight:bold;margin:8px 0}
+.opt{background:#fff;border:4px solid var(--rosa2);border-radius:24px;font:inherit;font-size:40px;font-weight:bold;padding:14px 8px;cursor:pointer;color:var(--tx);box-shadow:0 5px 0 #0002}
+.opt:active{transform:translateY(3px)}
+.opt.ok{background:#c8f7d0;border-color:var(--verde)}
+.opt.no{background:#ffe0e0;border-color:#ff8a80}
+.tile{display:inline-block;background:var(--amar);border-radius:20px;padding:10px 22px;font-size:54px;font-weight:bold;margin:4px;box-shadow:0 5px 0 #0002;cursor:pointer}
+.tile small{font-size:22px;display:block;opacity:.7}
+.plus{font-size:44px;font-weight:bold;vertical-align:middle}
+.mic{background:var(--roxo);color:#fff;border:0;border-radius:50%;width:84px;height:84px;font-size:40px;box-shadow:0 6px 0 #0003;cursor:pointer}
+.mic.on{background:#e53935;animation:pulse .8s infinite}
+@keyframes pulse{50%{transform:scale(1.12)}}
+.vowel{font-size:64px;font-weight:bold;color:#fff;border-radius:24px;padding:10px;cursor:pointer;box-shadow:0 6px 0 #0003;border:0;font-family:inherit}
+.vowel span{display:block;font-size:46px}
+.vowel small{display:block;font-size:20px}
+.cells{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:10px auto;max-width:360px}
+.cell{background:#fff8e1;border:3px solid var(--amar);border-radius:10px;aspect-ratio:1;font-size:34px;display:flex;align-items:center;justify-content:center}
+.grupo{display:inline-block;background:#fff8e1;border:3px dashed var(--amar);border-radius:18px;padding:6px 10px;margin:4px;font-size:34px;max-width:46%}
+.msg{min-height:64px;font-size:24px;font-weight:bold;color:var(--roxo);margin-top:10px}
+#confete{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+.pc{position:absolute;top:-30px;font-size:30px;animation:cai 2.2s linear forwards}
+@keyframes cai{to{transform:translateY(110vh) rotate(540deg)}}
+.hide{display:none}
+.nota{font-size:14px;opacity:.7;text-align:center;margin-top:16px}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="avatar" id="avatar"><img src="laura.png" alt="Laura" onerror="this.parentNode.textContent='👧'"></div>
+    <div class="stars">⭐ <span id="nstars">0</span></div>
+  </header>
+  <main id="tela"></main>
+</div>
+<div id="confete"></div>
+
+<script>
+/* ============ VOZ ============ */
+let vozPT=null;
+function carregarVoz(){
+  const v=speechSynthesis.getVoices().filter(x=>/^pt/i.test(x.lang));
+  vozPT=v.find(x=>/pt-BR/i.test(x.lang)&&/(female|maria|francisca|luciana|google)/i.test(x.name))||v.find(x=>/pt-BR/i.test(x.lang))||v[0]||null;
+}
+if('speechSynthesis' in window){carregarVoz();speechSynthesis.onvoiceschanged=carregarVoz;}
+function falar(txt,fim){
+  if(!('speechSynthesis' in window)){fim&&fim();return;}
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(txt);
+  u.lang='pt-BR';if(vozPT)u.voice=vozPT;u.rate=0.82;u.pitch=1.15;
+  if(fim)u.onend=fim;
+  speechSynthesis.speak(u);
+}
+/* ============ RECONHECIMENTO (voz da Laura) ============ */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+function norm(s){return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z ]/g,'').trim();}
+function ouvir(alvos,cb){ // cb(true|false|null) null = sem microfone
+  if(!SR){cb(null);return;}
+  const r=new SR();r.lang='pt-BR';r.maxAlternatives=6;r.interimResults=false;
+  let done=false;
+  r.onresult=e=>{done=true;const alts=[...e.results[0]].map(a=>norm(a.transcript));
+    cb(alts.some(t=>alvos.some(a=>t.split(' ').includes(norm(a))||t===norm(a)||t.includes(norm(a)))));};
+  r.onerror=()=>{if(!done){done=true;cb(null);}};
+  r.onend=()=>{if(!done){done=true;cb(false);}};
+  try{r.start();}catch(e){cb(null);}
+  return r;
+}
+/* ============ PROGRESSO ============ */
+let estrelas=0;try{estrelas=+localStorage.getItem('ll_estrelas')||0;}catch(e){}
+const elN=document.getElementById('nstars');elN.textContent=estrelas;
+function ganhar(){estrelas++;elN.textContent=estrelas;try{localStorage.setItem('ll_estrelas',estrelas);}catch(e){}confete();}
+function confete(){
+  const c=document.getElementById('confete');const em=['⭐','🎉','🌟','💖','🎈','✨'];
+  for(let i=0;i<24;i++){const s=document.createElement('div');s.className='pc';s.textContent=em[i%em.length];
+    s.style.left=Math.random()*100+'%';s.style.animationDelay=Math.random()*.6+'s';c.appendChild(s);setTimeout(()=>s.remove(),3200);}
+}
+const PARABENS_LER=[
+ 'Parabéns, Laura! Você acertou! Mais uma vitória! Você está cada vez mais perto de aprender a ler!',
+ 'Muito bem, Laura! Mais uma vitória! Você está ficando uma leitora de verdade!',
+ 'Isso mesmo, Laura! Você conseguiu! Cada dia mais perto de ler sozinha!',
+ 'Uau, Laura! Acertou de novo! Mais uma vitória para a nossa leitora!'];
+const PARABENS_MAT=[
+ 'Parabéns, Laura! Você acertou! Mais uma vitória! Você está cada vez mais craque em números!',
+ 'Muito bem, Laura! Mais uma vitória! Você é boa de conta!',
+ 'Isso mesmo, Laura! Você conseguiu! Cada dia mais esperta com os números!'];
+const TENTE=['Quase, Laura! Vamos tentar de novo, você consegue!','Hummm, tente outra vez, Laura. Eu acredito em você!'];
+let ci=0;const pick=a=>a[(ci++)%a.length];
+const sorteia=a=>a[Math.floor(Math.random()*a.length)];
+function embaralha(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+/* ============ DADOS ============ */
+const VOGAIS=[
+ {l:'A',p:'abelha',e:'🐝',c:'c1'},{l:'E',p:'escada',e:'🪜',c:'c2'},{l:'I',p:'igreja',e:'⛪',c:'c3'},
+ {l:'O',p:'ovo',e:'🥚',c:'c4'},{l:'U',p:'uva',e:'🍇',c:'c5'}];
+const COMECA=[
+ {p:'abelha',e:'🐝',l:'A'},{p:'avião',e:'✈️',l:'A'},{p:'escada',e:'🪜',l:'E'},{p:'elefante',e:'🐘',l:'E'},
+ {p:'igreja',e:'⛪',l:'I'},{p:'ilha',e:'🏝️',l:'I'},{p:'ovo',e:'🥚',l:'O'},{p:'olho',e:'👁️',l:'O'},
+ {p:'uva',e:'🍇',l:'U'},{p:'urso',e:'🐻',l:'U'}];
+const PALAVRAS=[
+ ['ba','la','🍬'],['bo','la','⚽'],['va','ca','🐄'],['ga','to','🐱'],['pa','to','🦆'],['lu','a','🌙'],
+ ['ca','sa','🏠'],['bo','ca','👄'],['sa','po','🐸'],['bo','lo','🎂'],['ma','la','🧳'],['da','do','🎲'],
+ ['fa','da','🧚'],['pi','pa','🪁'],['lu','va','🧤'],['ve','la','🕯️'],['ra','to','🐭'],['ma','pa','🗺️'],
+ ['co','po','🥛'],['si','no','🔔'],['lo','bo','🐺'],['pe','ra','🍐'],['mo','to','🏍️'],['te','la','📺']
+].map(([a,b,e])=>({s:[a,b],p:a+b,e}));
+const CONS='b c d f g l m n p r s t v'.split(' ');
+const SILMAP={b:'ba be bi bo bu',c:'ca co cu',d:'da de di do du',f:'fa fe fi fo fu',g:'ga go gu',l:'la le li lo lu',m:'ma me mi mo mu',n:'na ne ni no nu',p:'pa pe pi po pu',r:'ra re ri ro ru',s:'sa se si so su',t:'ta te ti to tu',v:'va ve vi vo vu'};
+const NOMES=['zero','um','dois','três','quatro','cinco','seis','sete','oito','nove','dez'];
+const OBJ=['🌸','🍎','⭐','🐟','🎈','🍓','🚗','🦋'];
+
+/* ============ TELAS ============ */
+const T=document.getElementById('tela');
+function tela(h){speechSynthesis.cancel();T.innerHTML=h;}
+function voltar(fn,rot){return `<button class="back" onclick="${fn}()">⬅ ${rot||'Voltar'}</button>`;}
+
+function home(){
+  tela(`<h1>📖 Laura Leitora</h1>
+  <div class="grid">
+    <button class="btn big c1" onclick="menuPT()">📚 Português</button>
+    <button class="btn big c2" onclick="menuMAT()">🔢 Matemática</button>
+  </div>
+  <p class="nota">Dica: coloque a foto da Laura na pasta do app com o nome <b>laura.png</b>.</p>`);
+  falar('Oi, Laura! Vamos aprender hoje? Escolha Português ou Matemática.');
+}
+function menuPT(){
+  tela(`${voltar('home')}<h2>📚 Português</h2>
+  <div class="grid g2">
+    <button class="btn c1" onclick="vogais()">🔤 Ouvir as vogais</button>
+    <button class="btn c3" onclick="comeca()">🖼️ Com que letra começa?</button>
+    <button class="btn c4" onclick="familias()">🎵 Família das sílabas</button>
+    <button class="btn c5" onclick="juntar()">🧩 Juntar sílabas</button>
+  </div>`);
+  falar('Português! O que vamos fazer?');
+}
+function menuMAT(){
+  tela(`${voltar('home')}<h2>🔢 Matemática</h2>
+  <div class="grid g2">
+    <button class="btn c2" onclick="contar()">🌷 Quantos tem?</button>
+    <button class="btn c3" onclick="somar()">➕ Contas de mais</button>
+    <button class="btn c4" onclick="maior()">⚖️ Quem tem mais?</button>
+    <button class="btn c5" onclick="numeros()">👂 Ouvir os números</button>
+  </div>`);
+  falar('Matemática! O que vamos fazer?');
+}
+
+/* ---- Vogais ---- */
+function vogais(){
+  tela(`${voltar('menuPT')}<h2>🔤 Toque na vogal</h2>
+  <div class="grid g2">${VOGAIS.map((v,i)=>`<button class="vowel ${v.c}" onclick="vogal(${i})">${v.l}<span>${v.e}</span><small>${v.p}</small></button>`).join('')}</div>`);
+  falar('Toque em cada vogal para ouvir.');
+}
+function vogal(i){const v=VOGAIS[i];falar(`${v.l}. ${v.l} de ${v.p}.`);}
+
+/* ---- Com que letra começa ---- */
+function comeca(){
+  const it=sorteia(COMECA);let errou=false;
+  const ops=['A','E','I','O','U'].filter(x=>x!==it.l);
+  const o=embaralha([it.l,...embaralha(ops).slice(0,2)]);
+  tela(`${voltar('menuPT')}
+  <div class="card"><div class="emoji">${it.e}</div>
+  <div class="q">Com que letra começa?</div>
+  <button class="back" onclick="falar('Com que letra começa ${it.p}?')">🔊 Ouvir</button></div>
+  <div class="grid" style="grid-template-columns:repeat(3,1fr)">${o.map(x=>`<button class="opt" data-v="${x}">${x}</button>`).join('')}</div>
+  <div class="msg" id="msg"></div>`);
+  falar(`Com que letra começa ${it.p}?`);
+  T.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+    if(b.dataset.v===it.l){b.classList.add('ok');ganhar();
+      const m=pick(PARABENS_LER);document.getElementById('msg').textContent='🎉 '+m;
+      falar(`${it.l} de ${it.p}! ${m}`,()=>setTimeout(comeca,600));
+    }else{b.classList.add('no');const m=pick(TENTE);document.getElementById('msg').textContent=m;falar(m);}
+  });
+}
+
+/* ---- Família das sílabas ---- */
+function familias(){
+  tela(`${voltar('menuPT')}<h2>🎵 Escolha uma letra</h2>
+  <div class="grid" style="grid-template-columns:repeat(4,1fr)">${CONS.map(c=>`<button class="opt" onclick="familia('${c}')">${c.toUpperCase()}</button>`).join('')}</div>`);
+  falar('Escolha uma letra para ouvir as sílabas.');
+}
+function familia(c){
+  const s=SILMAP[c].split(' ');
+  tela(`${voltar('familias')}<h2>${c.toUpperCase()} com as vogais</h2>
+  <div class="card">${s.map(x=>`<span class="tile" onclick="falar('${x}')">${x.toUpperCase()}</span>`).join('')}
+  <p><button class="back" onclick="cantar('${c}')">▶ Ouvir todas</button></p></div>`);
+  cantar(c);
+}
+function cantar(c){const s=SILMAP[c].split(' ');let i=0;(function n(){if(i<s.length)falar(s[i++],()=>setTimeout(n,250));})();}
+
+/* ---- Juntar sílabas (voz da Laura ou toque) ---- */
+function juntar(){
+  const it=sorteia(PALAVRAS);let tent=0;
+  const outros=embaralha(PALAVRAS.filter(x=>x.p!==it.p)).slice(0,2);
+  const ops=embaralha([it,...outros]);
+  tela(`${voltar('menuPT')}
+  <div class="card">
+    <div class="q">Toque nas sílabas e junte!</div>
+    <span class="tile" onclick="falar('${it.s[0]}')">${it.s[0].toUpperCase()}<small>${it.s[0][0].toUpperCase()} com ${it.s[0][1].toUpperCase()}</small></span>
+    <span class="plus">+</span>
+    <span class="tile" onclick="falar('${it.s[1]}')">${it.s[1].toUpperCase()}<small>${it.s[1][0].toUpperCase()} com ${it.s[1][1].toUpperCase()}</small></span>
+    <div class="q">Que palavra formou, Laura?</div>
+    <button class="mic" id="mic" title="Fale a palavra">🎤</button>
+    <div style="font-size:16px;margin-top:4px">Aperte e fale com a sua voz!</div>
+  </div>
+  <div class="q" style="text-align:center">Ou toque no desenho:</div>
+  <div class="grid" style="grid-template-columns:repeat(3,1fr)">${ops.map(x=>`<button class="opt" data-p="${x.p}">${x.e}</button>`).join('')}</div>
+  <div class="msg" id="msg"></div>`);
+  falar(`${it.s[0][0]} com ${it.s[0][1]}. E ${it.s[1][0]} com ${it.s[1][1]}. Que palavra formou, Laura?`);
+  const msg=document.getElementById('msg');
+  const acerto=()=>{ganhar();const m=pick(PARABENS_LER);msg.textContent='🎉 '+it.p.toUpperCase()+'! '+m;
+    T.querySelectorAll('.opt').forEach(b=>{if(b.dataset.p===it.p)b.classList.add('ok');});
+    falar(`${it.p}! ${m}`,()=>setTimeout(juntar,700));};
+  const erro=()=>{tent++;const m=pick(TENTE);msg.textContent=m;
+    if(tent>=2){falar(m+` Escute: ${it.s[0]}... ${it.s[1]}... ${it.p}.`);}else falar(m);};
+  T.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{if(b.dataset.p===it.p)acerto();else{b.classList.add('no');erro();}});
+  const mic=document.getElementById('mic');
+  mic.onclick=()=>{speechSynthesis.cancel();mic.classList.add('on');
+    const r=ouvir([it.p],res=>{mic.classList.remove('on');
+      if(res===null){msg.textContent='O microfone não está disponível aqui. Toque no desenho! 👇';falar('Toque no desenho certo!');}
+      else if(res)acerto();else erro();});};
+}
+
+/* ---- Matemática ---- */
+function nivelMax(){return Math.min(10,5+Math.floor(estrelas/10));}
+function opcoesNum(certo,max){
+  const s=new Set([certo]);while(s.size<3){const n=Math.max(0,Math.min(max+1,certo+Math.floor(Math.random()*5)-2));s.add(n);}
+  return embaralha([...s]);
+}
+function respostaNum(certo,ops,aoAcertar,fala){
+  T.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+    if(+b.dataset.v===certo){b.classList.add('ok');ganhar();const m=pick(PARABENS_MAT);
+      document.getElementById('msg').textContent='🎉 '+m;falar(`${fala} ${m}`,()=>setTimeout(aoAcertar,600));}
+    else{b.classList.add('no');const m=pick(TENTE);document.getElementById('msg').textContent=m;falar(m);}
+  });
+}
+function contar(){
+  const n=1+Math.floor(Math.random()*nivelMax());const e=sorteia(OBJ);
+  const ops=opcoesNum(n,nivelMax());
+  const cells=Array.from({length:10},(_,i)=>`<div class="cell">${i<n?e:''}</div>`).join('');
+  tela(`${voltar('menuMAT')}
+  <div class="card"><div style="font-size:60px">🏺</div>
+  <div class="q">Quantas ${e} tem, Laura?</div><div class="cells">${cells}</div>
+  <button class="back" onclick="falar('Quantos tem? Conte comigo.')">🔊 Ouvir</button>
+  <button class="back" onclick="contaJunto(${n})">👆 Contar junto</button></div>
+  <div class="grid" style="grid-template-columns:repeat(3,1fr)">${ops.map(x=>`<button class="opt" data-v="${x}">${x}</button>`).join('')}</div>
+  <div class="msg" id="msg"></div>`);
+  falar('Quantos tem, Laura? Conte com o dedinho.');
+  respostaNum(n,ops,contar,`${NOMES[n]}!`);
+}
+function contaJunto(n){let i=1;(function f(){if(i<=n){falar(String(NOMES[i]),()=>{i++;setTimeout(f,150);});}})();}
+function somar(){
+  const mx=nivelMax();const a=1+Math.floor(Math.random()*(mx-1)),b=1+Math.floor(Math.random()*(mx-a));
+  const r=a+b;const e=sorteia(OBJ);const ops=opcoesNum(r,mx);
+  tela(`${voltar('menuMAT')}
+  <div class="card"><div class="q">${NOMES[a]} mais ${NOMES[b]}</div>
+  <span class="grupo">${e.repeat(a)}</span><span class="plus">+</span><span class="grupo">${e.repeat(b)}</span>
+  <div style="font-size:54px;font-weight:bold;margin-top:6px">${a} + ${b} = ?</div>
+  <button class="back" onclick="falar('${NOMES[a]} mais ${NOMES[b]} é igual a quanto?')">🔊 Ouvir</button></div>
+  <div class="grid" style="grid-template-columns:repeat(3,1fr)">${ops.map(x=>`<button class="opt" data-v="${x}">${x}</button>`).join('')}</div>
+  <div class="msg" id="msg"></div>`);
+  falar(`${NOMES[a]} mais ${NOMES[b]} é igual a quanto?`);
+  respostaNum(r,ops,somar,`${NOMES[a]} mais ${NOMES[b]} é igual a ${NOMES[r]}!`);
+}
+function maior(){
+  const e1=sorteia(OBJ);let a=1+Math.floor(Math.random()*nivelMax()),b;do{b=1+Math.floor(Math.random()*nivelMax());}while(b===a);
+  tela(`${voltar('menuMAT')}
+  <div class="card"><div class="q">Onde tem MAIS, Laura?</div></div>
+  <div class="grid g2">
+    <button class="opt" style="font-size:30px" data-v="${a>b?1:0}">${e1.repeat(a)}</button>
+    <button class="opt" style="font-size:30px" data-v="${b>a?1:0}">${e1.repeat(b)}</button></div>
+  <div class="msg" id="msg"></div>`);
+  falar('Onde tem mais, Laura?');
+  respostaNum(1,[],maior,'Esse tem mais!');
+}
+function numeros(){
+  tela(`${voltar('menuMAT')}<h2>👂 Toque no número</h2>
+  <div class="grid" style="grid-template-columns:repeat(4,1fr)">${NOMES.slice(1).map((n,i)=>`<button class="opt" onclick="falar('${n}')">${i+1}</button>`).join('')}</div>`);
+  falar('Toque em cada número para ouvir.');
+}
+
+home();
+</script>
+</body>
+</html>
