@@ -130,12 +130,14 @@ function carregarVoz(){
   vozEN=vs.find(x=>/^en-US/i.test(x.lang)&&/(female|zira|samantha|jenny|aria|google)/i.test(x.name))||vs.find(x=>/^en/i.test(x.lang))||null;
 }
 if('speechSynthesis' in window){carregarVoz();speechSynthesis.onvoiceschanged=carregarVoz;}
+function vozPara(lang){try{const vs=speechSynthesis.getVoices(),L=lang.toLowerCase(),p=L.slice(0,2);
+  return vs.find(x=>x.lang.replace('_','-').toLowerCase()===L)||vs.find(x=>x.lang.toLowerCase().startsWith(p))||null;}catch(e){return null;}}
 function falar(txt,fim,lang){
   if(!('speechSynthesis' in window)){fim&&fim();return;}
   speechSynthesis.cancel();
   const u=new SpeechSynthesisUtterance(txt);
   lang=lang||'pt-BR';u.lang=lang;
-  const vz=/^en/i.test(lang)?vozEN:vozPT;if(vz)u.voice=vz;u.rate=0.82;u.pitch=1.15;
+  const vz=/^en/i.test(lang)?vozEN:(/^pt/i.test(lang)?vozPT:vozPara(lang));if(vz)u.voice=vz;u.rate=0.82;u.pitch=1.15;
   if(fim)u.onend=fim;
   speechSynthesis.speak(u);
 }
@@ -231,6 +233,7 @@ function home(){
       <button class="btn c5" onclick="menuMag()">✨ Palavras mágicas</button>
       <button class="btn c6" onclick="diario()">📔 Diário da Laura</button>
     </div>
+    <button class="btn c2" onclick="amoMenu()">❤️ Eu te amo no mundo</button>
     <button class="btn c4" onclick="album()">🏆 Meus prêmios</button>
   </div>
   <p style="text-align:center;margin-top:24px"><button class="back" onclick="pais()">👨‍👩‍👧 Área dos pais</button></p>`);
@@ -246,6 +249,7 @@ function menuPT(){
     <button class="btn c6" onclick="rimas()">🎶 Rimas</button>
     <button class="btn c2" onclick="rimaFrase()">🎤 Rimas com frases</button>
     <button class="btn c3" onclick="generoMenu()">🐾 Macho e fêmea</button>
+    <button class="btn c4" onclick="silabas3()">👏 Palavras de 3 sílabas</button>
   </div>`);
   falar('Português! O que vamos fazer?');
 }
@@ -630,6 +634,97 @@ function rimaFrase(){
       const toks=[...new Set(alts.flatMap(t=>t.split(' ')))].filter(t=>t.length>=3&&!pals.includes(t));
       for(const t of toks){const k=acha(t);if(k){acerto(t,k[0]);return;}}
       erro();});};
+}
+
+/* ============ PALAVRAS DE 3 SÍLABAS ============ */
+const SIL3=[['sapato','👞','sa-pa-to'],['banana','🍌','ba-na-na'],['macaco','🐒','ma-ca-co'],['tomate','🍅','to-ma-te'],['cavalo','🐴','ca-va-lo'],['janela','🪟','ja-ne-la'],['galinha','🐔','ga-li-nha'],['pipoca','🍿','pi-po-ca'],['sorvete','🍦','sor-ve-te'],['girafa','🦒','gi-ra-fa'],['jacaré','🐊','ja-ca-ré'],['caneta','🖊️','ca-ne-ta'],['batata','🥔','ba-ta-ta'],['camisa','👕','ca-mi-sa'],['formiga','🐜','for-mi-ga'],['abelha','🐝','a-be-lha'],['coruja','🦉','co-ru-ja'],['bolacha','🍪','bo-la-cha'],['cadeira','🪑','ca-dei-ra'],['navio','🚢','na-vi-o'],['panela','🍲','pa-ne-la'],['vestido','👗','ves-ti-do'],['foguete','🚀','fo-gue-te'],['vaquinha','🐄','va-qui-nha'],['bolinha','⚽','bo-li-nha']];
+const PARABENS_SIL=['Parabéns, Laura! Você falou as sílabas e a palavra certinho!','Muito bem! Você é muito inteligente!','Uau! Que menina esperta! Você conseguiu!','Isso mesmo! Palmas para a Laura! 👏','Arrasou, Laura! Que leitora incrível!'];
+let silUlt=-1;
+function silabas3(){
+  let i;do{i=Math.floor(Math.random()*SIL3.length);}while(i===silUlt);silUlt=i;
+  const [pal,em,sl]=SIL3[i],sils=sl.split('-'),cores=['var(--roxo)','#e8590c','#1c7ed6','#2b8a3e'];
+  let fase=0,tent=0,fim=false;
+  const w=norm(pal),juntas=sils.map(norm).join('');
+  const bonito=sils.map((s,k)=>`<span style="color:${cores[k%4]}">${s.toUpperCase()}</span>`).join('<span style="color:#aaa"> - </span>');
+  tela(`${voltar('menuPT')}
+  <div class="card"><div class="emoji">${em}</div>
+    <div class="q" style="letter-spacing:2px">${bonito}</div>
+    <div style="font-size:16px" id="pas"></div>
+    <button class="back" id="ouv">🔊 Ouvir</button>
+    <p><button class="mic" id="mic">🎤</button></p></div>
+  <div class="msg" id="msg"></div>
+  <p style="text-align:center"><button class="back" id="prox">Outra palavra ➡</button></p>`);
+  const msg=document.getElementById('msg'),pas=document.getElementById('pas');
+  const instr=()=>{pas.innerHTML=fase===0?`Passo 1: aperte o 🎤 e fale <b>as sílabas</b>: ${sils.join(', ')}`:`Passo 2: agora aperte o 🎤 e diga <b>a palavra inteira</b>: ${pal}`;};
+  const modelo=()=>seq(sils.map(s=>s+',').concat([pal]));
+  const perg=()=>{instr();falar(fase===0?`Que palavra é essa? Aperte o microfone e fale as sílabas: ${sils.join(', ')}.`:`Muito bem! Agora diga a palavra inteira: ${pal}.`);};
+  instr();perg();
+  document.getElementById('ouv').onclick=modelo;document.getElementById('prox').onclick=silabas3;
+  const passo=()=>{if(fim)return;tent=0;
+    if(fase===0){fase=1;instr();msg.textContent='👏 Muito bem! Agora diga a palavra inteira!';falar(`Muito bem! Agora diga a palavra inteira: ${pal}.`);return;}
+    fim=true;reg('Sílabas de 3',pal,true);ganhar();const m=pick(PARABENS_SIL);
+    msg.textContent=`🎉 ${pal}! ${m}`;falar(`${pal}! ${m}`,()=>setTimeout(silabas3,900));};
+  const erro=()=>{tent++;reg('Sílabas de 3',pal,false);
+    if(tent>=3){tent=0;msg.innerHTML=`<div class="lista" style="text-align:center;background:#fff3cd">💜 A palavra é <b>${pal}</b> (${sils.join(' - ')}). Preste atenção, Laura! Você é inteligente e consegue!</div>`;
+      seq(sils.map(s=>s+',').concat([pal+'.','Preste atenção, Laura! Você é inteligente e consegue! Tente de novo.']));}
+    else if(tent===2){msg.textContent=`Escute com atenção: ${sils.join(' - ')}. Tente de novo, você consegue!`;seq(sils.map(s=>s+',').concat([pal+'.','Tente de novo, você consegue!']));}
+    else{const m=pick(TENTE);msg.textContent=m;falar(m);}};
+  const mic=document.getElementById('mic');
+  mic.onclick=()=>{speechSynthesis.cancel();mic.classList.add('on');
+    ouvirLivre(alts=>{mic.classList.remove('on');
+      if(alts===null){msg.innerHTML='O microfone não está disponível aqui. Fale em voz alta e toque: <button class="back" id="ja">Já falei! ✅</button>';document.getElementById('ja').onclick=passo;return;}
+      if(!alts.length){msg.textContent='Não escutei. Aperte o microfone e fale mais alto! 🎤';falar('Não escutei. Aperte o microfone e fale mais alto!');return;}
+      const ok=fase===0?alts.some(t=>t.replace(/ /g,'').includes(juntas)):alts.some(t=>t.replace(/ /g,'').includes(w));
+      ok?passo():erro();});};
+}
+
+/* ============ EU TE AMO NO MUNDO ============ */
+const AMO=[
+ {l:'Português',h:'❤️',t:'Eu te amo',pr:'éu te á-mo',lang:'pt-BR',fala:'Eu te amo',alvos:['eu te amo','te amo']},
+ {l:'Inglês',h:'💙',t:'I love you',pr:'ai lâv iú',lang:'en-US',fala:'I love you',alvos:['i love you','love you']},
+ {l:'Italiano',h:'💚',t:'Ti amo',pr:'ti á-mo',lang:'it-IT',fala:'Ti amo',alvos:['ti amo']},
+ {l:'Espanhol',h:'💛',t:'Te quiero',pr:'te quiê-ro',lang:'es-ES',fala:'Te quiero',alvos:['te quiero','te amo']},
+ {l:'Japonês',h:'🧡',t:'Aishiteru (愛してる)',pr:'ai-chi-tê-ru',lang:'ja-JP',fala:'愛してる',alvos:['愛してる','あいしてる','アイシテル','aishiteru','愛してます']},
+ {l:'Francês',h:'💜',t:"Je t'aime",pr:'jê têm',lang:'fr-FR',fala:"Je t'aime",alvos:["je t'aime",'jetaime']}
+];
+const amoOk=(a,alts)=>alts.some(t=>{const n=norm(t).replace(/ /g,'');return a.alvos.some(x=>{const nx=norm(x).replace(/ /g,'');return (nx&&n.includes(nx))||t.toLowerCase().includes(x.toLowerCase());});});
+function amoMenu(){
+  tela(`${voltar('home')}<h2>❤️ Eu te amo no mundo</h2>
+  <div class="grid g2">${AMO.map((a,i)=>`<button class="enc" onclick="amoPratica(${i})"><div class="emoji">${a.h}</div><div class="w">${a.t}</div><div class="p">fale: ${a.pr}</div><div class="t">${a.l}</div></button>`).join('')}</div>
+  <p style="text-align:center"><button class="back" id="todos">🔊 Ouvir todos</button></p>`);
+  const todos=(i)=>{if(i>=AMO.length)return;falar(AMO[i].fala,()=>setTimeout(()=>todos(i+1),500),AMO[i].lang);};
+  document.getElementById('todos').onclick=()=>todos(0);
+  falar('Vamos aprender a dizer eu te amo em vários idiomas! Escolha um coração.');
+}
+function amoPratica(i){
+  const a=AMO[i];let tent=0,fim=false;
+  tela(`<button class="back" onclick="amoMenu()">⬅ Voltar</button>
+  <div class="card"><div class="emoji">${a.h}${a.h}${a.h}</div>
+    <div style="font-size:16px">Em <b>${a.l}</b></div>
+    <div class="q">${a.t}</div>
+    <div style="font-size:18px">Fale assim: <b>${a.pr}</b></div>
+    <button class="back" id="ouv">🔊 Ouvir</button>
+    <p><button class="mic" id="mic">🎤</button></p></div>
+  <div class="msg" id="msg"></div>
+  <p style="text-align:center"><button class="back" id="prox">Próximo idioma ➡</button></p>`);
+  const msg=document.getElementById('msg');
+  const ouvirA=()=>falar(a.fala,null,a.lang);
+  const intro=()=>falar(`Em ${a.l}, se diz:`,()=>falar(a.fala,()=>falar('Agora é a sua vez! Aperte o microfone e fale.'),a.lang));
+  intro();
+  document.getElementById('ouv').onclick=ouvirA;
+  document.getElementById('prox').onclick=()=>amoPratica((i+1)%AMO.length);
+  const acerto=()=>{if(fim)return;fim=true;reg('Eu te amo no mundo',a.l,true);ganhar();const m=pick(PARABENS_SIL);
+    msg.textContent=`🎉 ${a.t}! ${m}`;falar(`Muito bem, Laura! ${m} Eu também te amo!`);};
+  const erro=()=>{tent++;reg('Eu te amo no mundo',a.l,false);
+    if(tent>=3){tent=0;msg.innerHTML=`<div class="lista" style="text-align:center;background:#fff3cd">💜 Preste atenção, Laura! Você é inteligente e consegue! Escute: <b>${a.t}</b></div>`;
+      falar('Preste atenção, Laura! Você é inteligente e consegue! Escute.',()=>falar(a.fala,()=>falar('Tente de novo!'),a.lang));}
+    else{const m=pick(TENTE);msg.textContent=m+' Escute: '+a.pr;falar(m,()=>falar(a.fala,null,a.lang));}};
+  const mic=document.getElementById('mic');
+  mic.onclick=()=>{speechSynthesis.cancel();mic.classList.add('on');
+    ouvirLivre(alts=>{mic.classList.remove('on');
+      if(alts===null){msg.innerHTML='O microfone não está disponível aqui. Fale em voz alta e toque: <button class="back" id="ja">Já falei! ✅</button>';document.getElementById('ja').onclick=acerto;return;}
+      if(!alts.length){msg.textContent='Não escutei. Aperte o microfone e fale mais alto! 🎤';falar('Não escutei. Aperte o microfone e fale mais alto!');return;}
+      amoOk(a,alts)?acerto():erro();},a.lang,true);};
 }
 
 /* ============ PALAVRAS MÁGICAS ============ */
