@@ -234,6 +234,7 @@ function home(){
       <button class="btn c6" onclick="diario()">📔 Diário da Laura</button>
     </div>
     <button class="btn c2" onclick="amoMenu()">❤️ Eu te amo no mundo</button>
+    <button class="btn c3" onclick="lembretes()">🔔 Lembretes</button>
     <button class="btn c4" onclick="album()">🏆 Meus prêmios</button>
   </div>
   <p style="text-align:center;margin-top:24px"><button class="back" onclick="pais()">👨‍👩‍👧 Área dos pais</button></p>`);
@@ -888,15 +889,36 @@ const DIARIO=[
  {id:'dia',t:'Dia',q:'Como foi o seu dia hoje?',o:[['😀','Ótimo'],['🙂','Bom'],['😐','Mais ou menos'],['😢','Triste']],
   r:{'Ótimo':'Que bom, Laura! Fico muito feliz!','Bom':'Que legal, Laura! Um dia bom é muito bom!','Mais ou menos':'Tudo bem, às vezes é assim. Amanhã pode ser melhor!','Triste':'Sinto muito, Laura. Conte para a mamãe ou para o papai, eles vão te dar um abraço!'}},
  {id:'casa',t:'Casa',q:'Você está na casa da mamãe ou na casa do papai?',o:[['👩','Casa da mamãe'],['👨','Casa do papai'],['🏠','Outro lugar']]},
+ {id:'mamae',t:'Gosto na casa da mamãe',q:'O que você mais gosta quando está na casa da mamãe?',voz:1,o:[['🤗','Dos abraços'],['🍽️','Da comida'],['🎮','De brincar'],['🛏️','Do meu quarto']]},
+ {id:'papai',t:'Gosto na casa do papai',q:'O que você mais gosta quando está na casa do papai?',voz:1,o:[['🤗','Dos abraços'],['🍽️','Da comida'],['🎮','De brincar'],['🛏️','Do meu quarto']]},
  {id:'semana',t:'Semana',q:'Essa semana é de quem?',o:[['👩','Da mamãe'],['👨','Do papai']]},
  {id:'escola',t:'Escola',q:'Como foi na escola hoje?',o:[['🤩','Muito legal'],['🙂','Foi bom'],['😐','Mais ou menos'],['🏠','Não fui hoje']]},
+ {id:'escolaGosto',t:'Gosto na escola',q:'O que você mais gosta quando está na escola?',voz:1,o:[['🛝','Do recreio'],['👫','Dos amigos'],['👩‍🏫','Da professora'],['🎨','Das atividades']]},
+ {id:'tia',t:'Aula da tia Jarlane',q:'Você gostou da aula da tia Jarlane hoje?',o:[['😍','Sim'],['😕','Não'],['🏠','Não tive aula']],r:{'Sim':'Que bom, Laura! A tia Jarlane vai ficar feliz!','Não':'Tudo bem, Laura. Obrigada por ser sincera!'}},
+ {id:'tiaS',t:'Por que gostou da aula',q:'Por que você gostou da aula da tia Jarlane?',so:['tia','Sim'],voz:1,o:[['💡','Aprendi coisas novas'],['🎨','Fiz atividades legais'],['👫','Brinquei com os amigos'],['❤️','Gosto da tia']]},
+ {id:'tiaN',t:'Por que não gostou da aula',q:'Por que você não gostou da aula da tia Jarlane?',so:['tia','Não'],voz:1,o:[['😴','Estava cansada'],['🤔','Achei difícil'],['🙁','Não gostei da atividade'],['😢','Estava triste']],r:{'Estava cansada':'Descansar é importante! Durma cedo hoje, tá bom?','Achei difícil':'Quando é difícil, a gente tenta de novo e pede ajuda. Você consegue, Laura!','Não gostei da atividade':'Entendi, Laura. Conte para a mamãe ou para o papai.','Estava triste':'Sinto muito, Laura. Conte para a mamãe ou para o papai, eles vão te dar um abraço!'}},
+ {id:'judo',t:'Judô',q:'Hoje teve judô?',o:[['🥋','Sim'],['🙂','Não']]},
+ {id:'judoC',t:'Como foi o judô',q:'Como foi o judô hoje?',so:['judo','Sim'],voz:1,o:[['🤩','Muito legal'],['🙂','Foi bom'],['😐','Mais ou menos'],['😴','Fiquei cansada']],r:{'Muito legal':'Uau, Laura! Que campeã!','Foi bom':'Muito bem, Laura! Parabéns pelo esforço!'}},
  {id:'legal',t:'Mais legal',q:'O que teve de mais legal hoje?',voz:1,o:[['🛝','Recreio'],['👫','Brincar com amigos'],['🎨','Atividade'],['🍎','Lanche']]},
  {id:'lanche',t:'Lanche',q:'Você gostou do lanche?',o:[['😋','Gostei muito'],['🙂','Mais ou menos'],['🙁','Não gostei']]},
  {id:'comeu',t:'Comeu',q:'O que você comeu no lanche?',voz:1,o:[['🍎','Fruta'],['🥪','Sanduíche'],['🧃','Suco'],['🍪','Biscoito']]},
  {id:'amigos',t:'Amigos',q:'Você brincou com algum amiguinho?',o:[['👫','Sim'],['🙂','Brinquei sozinha']]},
  {id:'ajudou',t:'Ajudou',q:'Você ajudou alguém hoje?',o:[['🤲','Sim'],['🤔','Não lembro']],r:{'Sim':'Parabéns, Laura! Ajudar os outros é lindo!'}},
  {id:'triste',t:'Chateada',q:'Aconteceu algo que deixou você triste ou chateada?',o:[['😊','Não'],['😢','Sim']],r:{'Sim':'Obrigada por me contar, Laura. Conte para a mamãe ou para o papai, eles vão te ajudar!','Não':'Que bom, Laura!'}},
+ {id:'obedeceu',t:'Obedeceu',q:'Você obedeceu a mamãe e o papai hoje?',o:[['😇','Sim'],['😅','Mais ou menos'],['🙈','Hoje não']],r:{'Sim':'Parabéns, Laura! Que menina obediente!','Mais ou menos':'Tudo bem, amanhã você faz ainda melhor!','Hoje não':'Tudo bem, Laura. Amanhã vamos tentar de novo, você consegue!'}},
+ {id:'licao',t:'Lição',q:'Você fez a lição ou estudou hoje?',o:[['📚','Sim'],['🙂','Um pouquinho'],['🏠','Hoje não tinha']]},
+ {id:'dentes',t:'Dentes',q:'Você escovou os dentinhos hoje?',o:[['🦷','Sim'],['🙈','Esqueci']],r:{'Sim':'Muito bem, Laura! Dentinhos limpos!','Esqueci':'Vá escovar agora, Laura! Dentinhos limpinhos sorriem melhor!'}},
+ {id:'saudade',t:'Saudade',q:'Você sentiu saudade de alguém hoje?',voz:1,o:[['👩','Da mamãe'],['👨','Do papai'],['👵','Da vovó'],['🙂','De ninguém']]},
+ {id:'brincar',t:'Brincadeira favorita',q:'Qual foi a sua brincadeira favorita hoje?',voz:1,o:[['🧸','Brinquedos'],['🎨','Desenhar'],['📱','Vídeos'],['🏃','Correr e pular']]},
+ {id:'abraco',t:'Abraço',q:'Você deu um abraço em alguém hoje?',o:[['🤗','Sim'],['🙂','Ainda não']],r:{'Ainda não':'Então dê um abraço bem apertado agora, Laura!','Sim':'Que lindo, Laura! Abraço é amor!'}},
  {id:'melhor',t:'Melhor coisa',q:'Qual foi a melhor coisa do seu dia?',voz:1,o:[['🎮','Brincar'],['📚','Aprender'],['🍰','Comer'],['❤️','Ficar com a família']]}];
+const LEMBRETES=[['🌙','Não esqueça de dormir cedo, para acordar cedo e não chegar atrasada. Nem você, nem a mamãe!'],['👩','Obedeça a mamãe.'],['🤝','Ofereça ajuda às pessoas.'],['🙏','Lembre de rezar e agradecer ao seu anjinho da guarda.']];
+const lembretesHtml=()=>`<div class="lista"><b>🔔 Lembretes da Laura</b>${LEMBRETES.map(x=>`<div style="margin-top:8px"><span style="font-size:28px">${x[0]}</span> ${x[1]}</div>`).join('')}</div>`;
+function lembretes(){
+  tela(`${voltar('home')}<h2>🔔 Lembretes da Laura</h2>${lembretesHtml()}<p style="text-align:center"><button class="back" id="ouv">🔊 Ouvir</button></p>`);
+  const dizer=()=>seq(['Laura, não esqueça:'].concat(LEMBRETES.map(x=>x[1])));
+  dizer();document.getElementById('ouv').onclick=dizer;
+}
 const hojeStr=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
 function diarioLer(){try{return JSON.parse(localStorage.getItem('ll_diario')||'{}');}catch(e){return {};}}
 function diarioGravar(d){try{localStorage.setItem('ll_diario',JSON.stringify(d));}catch(e){}}
@@ -907,10 +929,11 @@ function diario(i){
     const d=diarioLer(),h=hojeStr(),dia=d[h]||(d[h]={}),jaTinha=!!dia._ok;dia._ok=1;diarioGravar(d);
     if(!jaTinha)ganhar();
     const t=jaTinha?'Parabéns, Laura! Seu diário de hoje está completo!':'Parabéns, Laura! Seu diário de hoje está pronto! Você ganhou uma estrela!';
-    tela(`${voltar('home')}<h2>📔 Diário da Laura</h2><div class="card"><div class="emoji">🌟</div><div class="q">${t}</div></div>`);
-    falar(t+' Até amanhã!');return;
+    tela(`${voltar('home')}<h2>📔 Diário da Laura</h2><div class="card"><div class="emoji">🌟</div><div class="q">${t}</div></div>${lembretesHtml()}`);
+    seq([t,'Laura, não esqueça:'].concat(LEMBRETES.map(x=>x[1])).concat(['Até amanhã!']));return;
   }
   const p=DIARIO[i];let fim=false;
+  if(p.so){const dd=(diarioLer()[hojeStr()]||{})[p.so[0]];if(dd!==p.so[1]){diario(i+1);return;}}
   tela(`${voltar('home')}<h2>📔 Diário da Laura</h2>
   <div style="text-align:center;font-size:15px;opacity:.7">Pergunta ${i+1} de ${DIARIO.length}</div>
   <div class="card"><div class="emoji">📔</div><div class="q">${p.q}</div><button class="back" id="ouv">🔊 Ouvir</button>
