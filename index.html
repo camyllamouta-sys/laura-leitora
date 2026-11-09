@@ -2,7 +2,9 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
 <meta name="theme-color" content="#ff7eb6">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -14,8 +16,12 @@
 <style>
 :root{--rosa:#ff7eb6;--rosa2:#ffd1e6;--roxo:#7c4dff;--azul:#4fc3f7;--verde:#66d17a;--amar:#ffd54f;--laranja:#ffa04d;--tx:#3b2a5a}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;font-family:"Trebuchet MS","Comic Sans MS",system-ui,sans-serif;color:var(--tx);background:linear-gradient(160deg,#fff0f8,#e6f4ff);min-height:100vh;user-select:none}
-#app{max-width:640px;margin:0 auto;padding:12px 16px 40px;min-height:100vh;display:flex;flex-direction:column}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overflow-x:hidden}
+body{margin:0;font-family:"Trebuchet MS","Comic Sans MS",system-ui,sans-serif;color:var(--tx);background:linear-gradient(160deg,#fff0f8,#e6f4ff) fixed;min-height:100vh;min-height:100dvh;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overflow-x:hidden;overscroll-behavior-y:contain}
+#app{max-width:640px;margin:0 auto;padding:12px 16px 40px;padding-top:max(12px,env(safe-area-inset-top));padding-bottom:max(40px,calc(env(safe-area-inset-bottom) + 24px));padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right));min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;width:100%}
+.grid>*{min-width:0}
+button{max-width:100%;overflow-wrap:anywhere}
+img,svg{max-width:100%}
 header{display:flex;align-items:center;gap:10px;justify-content:space-between;margin-bottom:8px}
 .avatar{width:64px;height:64px;border-radius:50%;border:4px solid var(--rosa);background:var(--rosa2);object-fit:cover;display:flex;align-items:center;justify-content:center;font-size:36px;overflow:hidden}
 .avatar img{width:100%;height:100%;object-fit:cover}
@@ -55,7 +61,7 @@ h2{text-align:center;margin:8px 0}
 .hide{display:none}
 #premio{position:fixed;inset:0;background:#fffffff2;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-size:28px;font-weight:bold;color:var(--roxo);padding:24px}
 #premio.hide{display:none}
-.fig{background:#fff;border:3px solid var(--amar);border-radius:16px;font-size:44px;padding:8px 0;text-align:center}
+.fig{background:#fff;border:3px solid var(--amar);border-radius:16px;font-size:34px;padding:6px 0;text-align:center;min-width:0}
 .fig.off{filter:grayscale(1);opacity:.35;border-style:dashed}
 .lista{background:#fff;border-radius:18px;padding:10px 14px;margin:8px 0;text-align:left;font-size:18px}
 .lista b{color:var(--roxo)}
@@ -72,6 +78,35 @@ h2{text-align:center;margin:8px 0}
 .enc .t{font-size:17px;color:var(--roxo)}
 .enc .em{font-size:52px;line-height:1.2}
 .nota{font-size:14px;opacity:.7;text-align:center;margin-top:16px}
+#premio{padding-top:max(24px,env(safe-area-inset-top));padding-bottom:max(24px,env(safe-area-inset-bottom));overflow-y:auto}
+/* telas pequenas (iPhone SE, Androids de 320-360px) */
+@media (max-width:380px){
+  #app{padding-left:max(10px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right))}
+  h1{font-size:27px}
+  .stars{font-size:17px;padding:6px 12px}
+  .avatar{width:54px;height:54px}
+  .btn{font-size:20px;padding:14px 8px}
+  .big{padding:26px 8px;font-size:25px}
+  .emoji{font-size:76px}
+  .q{font-size:22px}
+  .opt{font-size:32px;padding:12px 4px;border-width:3px}
+  .tile{font-size:42px;padding:8px 14px}
+  .vowel{font-size:52px}.vowel span{font-size:36px}
+  .cell{font-size:26px}
+  .grupo{font-size:28px}
+  .msg{font-size:20px}
+  .card{padding:12px;border-radius:22px}
+  .enc .em{font-size:42px}.enc .w{font-size:22px}
+  .dia{font-size:22px}
+  .mic{width:72px;height:72px;font-size:34px}
+}
+/* telas baixas / celular deitado */
+@media (max-height:520px){
+  .emoji{font-size:56px}
+  .big{padding:16px 8px}
+  .btn{padding:10px 8px}
+  h1{font-size:24px;margin:2px 0}
+}
 </style>
 </head>
 <body>
@@ -118,19 +153,31 @@ function ouvir(alvos,cb,lang){ // cb(true|false|null) null = sem microfone
   try{r.start();}catch(e){cb(null);}
   return r;
 }
+function ouvirLivre(cb,lang,cru){ // cb(lista de falas|null); cru=true mantém o texto original
+  if(!SR){cb(null);return;}
+  const r=new SR();r.lang=lang||'pt-BR';r.maxAlternatives=6;r.interimResults=false;
+  let done=false;
+  r.onresult=e=>{done=true;cb([...e.results[0]].map(a=>cru?a.transcript.trim():norm(a.transcript)));};
+  r.onerror=ev=>{if(!done){done=true;cb(ev&&(ev.error==='no-speech'||ev.error==='aborted')?[]:null);}};
+  r.onend=()=>{if(!done){done=true;cb([]);}};
+  try{r.start();}catch(e){cb(null);}
+  return r;
+}
 /* ============ PROGRESSO ============ */
 let estrelas=0;try{estrelas=+localStorage.getItem('ll_estrelas')||0;}catch(e){}
 const elN=document.getElementById('nstars');elN.textContent=estrelas;
 let extra='';
 function ganhar(){estrelas++;elN.textContent=estrelas;try{localStorage.setItem('ll_estrelas',estrelas);}catch(e){}confete();
-  if(estrelas%10===0){
-    const grande=estrelas%50===0;
-    const t=grande?`Uau! Você juntou ${estrelas} estrelas! Você ganhou um troféu e um prêmio: ${premio()}!`:'Você ganhou uma figurinha nova!';
-    extra=' '+t;mostraPremio(grande?'🏆':FIGS[(estrelas/10-1)%FIGS.length],grande?t:'Figurinha nova!');
+  if(estrelas%5===0){ // figurinha a cada 5 estrelas; prêmio 1 a cada 50; prêmio 2 ao completar o álbum (200)
+    const p2=estrelas%200===0,p1=estrelas%50===0;
+    const t=p2?`Uau, Laura! Você completou o álbum com ${estrelas} estrelas! Você ganhou o prêmio número 2: ${premio2()}!`
+      :p1?`Uau! Você juntou ${estrelas} estrelas! Você ganhou um troféu e um prêmio: ${premio()}!`:'Você ganhou uma figurinha nova!';
+    extra=' '+t;mostraPremio(p2?'🎁':p1?'🏆':FIGS[(estrelas/5-1)%FIGS.length],(p1||p2)?t:'Figurinha nova!');
   }}
 let stats={};try{stats=JSON.parse(localStorage.getItem('ll_stats')||'{}');}catch(e){}
 function reg(cat,item,ok){const k=cat+'|'+item;const s=stats[k]||(stats[k]={a:0,e:0});if(ok)s.a++;else s.e++;try{localStorage.setItem('ll_stats',JSON.stringify(stats));}catch(e){}}
 function premio(){try{return localStorage.getItem('ll_premio')||'um prêmio combinado com a mamãe';}catch(e){return 'um prêmio combinado com a mamãe';}}
+function premio2(){try{return localStorage.getItem('ll_premio2')||'o prêmio número 2 combinado com a mamãe';}catch(e){return 'o prêmio número 2 combinado com a mamãe';}}
 function confete(){
   const c=document.getElementById('confete');const em=['⭐','🎉','🌟','💖','🎈','✨'];
   for(let i=0;i<24;i++){const s=document.createElement('div');s.className='pc';s.textContent=em[i%em.length];
@@ -180,10 +227,14 @@ function home(){
     <button class="btn big c1" onclick="menuPT()">📚 Português</button>
     <button class="btn big c2" onclick="menuMAT()">🔢 Matemática</button>
     <button class="btn big c3" onclick="ingles()">🇺🇸 Inglês</button>
+    <div class="grid g2" style="margin-top:0">
+      <button class="btn c5" onclick="menuMag()">✨ Palavras mágicas</button>
+      <button class="btn c6" onclick="diario()">📔 Diário da Laura</button>
+    </div>
     <button class="btn c4" onclick="album()">🏆 Meus prêmios</button>
   </div>
   <p style="text-align:center;margin-top:24px"><button class="back" onclick="pais()">👨‍👩‍👧 Área dos pais</button></p>`);
-  falar('Oi, Laura! Vamos aprender hoje? Escolha Português, Matemática ou Inglês.');
+  falar('Oi, Laura! Vamos aprender hoje? Escolha Português, Matemática, Inglês, Palavras mágicas ou o seu Diário.');
 }
 function menuPT(){
   tela(`${voltar('home')}<h2>📚 Português</h2>
@@ -193,6 +244,8 @@ function menuPT(){
     <button class="btn c4" onclick="familias()">🎵 Família das sílabas</button>
     <button class="btn c5" onclick="juntar()">🧩 Juntar sílabas</button>
     <button class="btn c6" onclick="rimas()">🎶 Rimas</button>
+    <button class="btn c2" onclick="rimaFrase()">🎤 Rimas com frases</button>
+    <button class="btn c3" onclick="generoMenu()">🐾 Macho e fêmea</button>
   </div>`);
   falar('Português! O que vamos fazer?');
 }
@@ -454,7 +507,8 @@ function enJogar(k){
 }
 
 /* ============ FIGURINHAS E PRÊMIOS ============ */
-const FIGS=['🦄','🌈','🐼','🦋','🐬','🌻','🍭','🎀','🚀','🐢','🦊','🐙','🍉','🎈','🐥','🏰','🎨','🎸','🌟','👑'];
+const FIGS=['🦄','🌈','🐼','🦋','🐬','🌻','🍭','🎀','🚀','🐢','🦊','🐙','🍉','🎈','🐥','🏰','🎨','🎸','🌟','👑',
+ '🐠','🍓','🦁','🐰','🍦','🎠','🧸','🌺','🦖','🚂','🍪','⛵','🐞','🍩','🎪','🦜','🐳','🍒','🪁','🎁'];
 function mostraPremio(e,txt){
   const p=document.getElementById('premio');
   p.innerHTML=`<div style="font-size:110px">${e}</div><div>${txt}</div><small style="font-weight:normal;font-size:16px">(toque para fechar)</small>`;
@@ -462,13 +516,14 @@ function mostraPremio(e,txt){
 }
 document.getElementById('premio').onclick=function(){this.classList.add('hide');};
 function album(){
-  const n=Math.floor(estrelas/10),tr=Math.floor(estrelas/50);
+  const n=Math.floor(estrelas/5),tr=Math.floor(estrelas/50),f2=200-(estrelas%200);
   tela(`${voltar('home')}<h2>🏆 Meus prêmios</h2>
   <div class="card"><div class="q">⭐ ${estrelas} estrelas</div>
-    <div style="background:#eee;border-radius:20px;height:22px;overflow:hidden"><div style="height:100%;width:${(estrelas%10)*10}%;background:var(--verde)"></div></div>
-    <div style="margin-top:6px">Faltam ${10-(estrelas%10)} estrelas para a próxima figurinha!</div>
-    <div class="q">${tr?'🏆'.repeat(tr)+' ':''}A cada 50 estrelas: ${premio()}</div></div>
-  <div class="grid" style="grid-template-columns:repeat(4,1fr)">${FIGS.map((f,i)=>`<div class="fig ${i<n?'':'off'}">${i<n?f:'❓'}</div>`).join('')}</div>`);
+    <div style="background:#eee;border-radius:20px;height:22px;overflow:hidden"><div style="height:100%;width:${(estrelas%5)*20}%;background:var(--verde)"></div></div>
+    <div style="margin-top:6px">Faltam ${5-(estrelas%5)} estrelas para a próxima figurinha!</div>
+    <div class="q">${tr?'🏆'.repeat(Math.min(tr,8))+' ':''}🏆 Prêmio 1, a cada 50 estrelas: ${premio()}<br><small>Faltam ${50-(estrelas%50)} estrelas</small></div>
+    <div class="q">🎁 Prêmio 2, com o álbum completo (200 estrelas): ${premio2()}<br><small>Faltam ${f2} estrelas</small></div></div>
+  <div class="grid" style="grid-template-columns:repeat(5,1fr);gap:8px">${FIGS.map((f,i)=>`<div class="fig ${i<n?'':'off'}">${i<n?f:'❓'}</div>`).join('')}</div>`);
   falar(`Você tem ${estrelas} estrelas! Continue assim, Laura!`);
 }
 
@@ -493,7 +548,9 @@ function rimas(){
   const acerto=()=>{reg('Rimas',w+' / '+r,true);ganhar();const m=pick(PARABENS_LER);msg.textContent='🎉 '+w+' rima com '+r+'! '+m;
     T.querySelectorAll('.opt').forEach(b=>{if(b.dataset.w===r)b.classList.add('ok');});
     falar(`${w} rima com ${r}! ${m}`,()=>setTimeout(rimas,700));};
-  const erro=()=>{tent++;reg('Rimas',w+' / '+r,false);const m=pick(TENTE);msg.textContent=m;
+  const erro=()=>{tent++;reg('Rimas',w+' / '+r,false);
+    if(tent>=3){msg.innerHTML=caixaApoio();falar(`${APOIO} Escute: ${w}, ${r}. Rimam!`);return;}
+    const m=pick(TENTE);msg.textContent=m;
     if(tent>=2)falar(`${m} Escute: ${w}, ${r}. Rimam!`);else falar(m);};
   T.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{if(b.dataset.w===r)acerto();else{b.classList.add('no');erro();}});
   const mic=document.getElementById('mic');
@@ -501,6 +558,282 @@ function rimas(){
     ouvir([r],res=>{mic.classList.remove('on');
       if(res===null){msg.textContent='O microfone não está disponível aqui. Toque na resposta! 👇';falar('Toque na resposta certa!');}
       else if(res)acerto();else erro();});};
+}
+
+/* ============ APOIO QUANDO ERRA VÁRIAS VEZES ============ */
+const APOIO='Escute com atenção, Laura. Não desista e não fique triste, você é capaz! Se precisar, chame a mamãe para te ajudar.';
+const caixaApoio=()=>`<div class="lista" style="text-align:center;background:#fff3cd">💜 Escute com atenção, não desista e não fique triste! <b>Chame a mamãe</b> para te ajudar. 👩</div>`;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ============ RIMAS COM FRASES ============ */
+const PARABENS_RIMA=[
+ 'Parabéns, Laura! Você é uma poeta! Que rima linda!',
+ 'Muito bem, Laura! Você rimou direitinho! Continue assim!',
+ 'Isso mesmo, Laura! Você está cada vez mais esperta com as palavras!'];
+const FRASES=[
+ ['O gato comeu o pão','🐱',[['gato','rato pato mato prato'],['pão','mão chão balão limão feijão']]],
+ ['A bola caiu no chão','⚽',[['bola','cola escola sola'],['chão','mão pão balão limão']]],
+ ['A vaca come capim','🐄',[['vaca','faca maca saca'],['capim','jardim assim fim sim']]],
+ ['O pato nada no rio','🦆',[['pato','gato rato mato prato'],['rio','frio tio navio fio']]],
+ ['A fada tem uma varinha','🧚',[['fada','nada estrada piada'],['varinha','farinha galinha rainha cozinha sardinha vizinha linha']]],
+ ['A casa tem uma janela','🏠',[['casa','asa brasa'],['janela','vela panela bela tela']]],
+ ['O sol brilha no céu','☀️',[['sol','farol lençol anzol'],['céu','chapéu véu troféu']]],
+ ['A luva é do meu amigo','🧤',[['luva','uva chuva'],['amigo','abrigo perigo figo umbigo']]],
+ ['O palhaço tem um nariz','🤡',[['palhaço','laço braço traço espaço'],['nariz','feliz raiz giz país']]],
+ ['A lua brilha de noite','🌙',[['lua','rua tua sua nua']]],
+ ['O urso gosta de mel','🐻',[['urso','curso'],['mel','papel pincel anel hotel']]],
+ ['O leão tem um coração','🦁',[['leão','mão pão balão limão feijão'],['coração','mão pão balão limão feijão']]]];
+function rimaOk(t,k,lista){ // t = palavra falada (normalizada), k = palavra da frase (normalizada)
+  if(t.length<3||t===k)return false;
+  if(lista.split(' ').map(norm).includes(t))return true;
+  let n=0;while(n<t.length&&n<k.length&&t[t.length-1-n]===k[k.length-1-n])n++;
+  return n>=2&&n>=Math.min(3,Math.min(t.length,k.length)-1);
+}
+let fraseUlt=-1;
+function rimaFrase(){
+  let i;do{i=Math.floor(Math.random()*FRASES.length);}while(i===fraseUlt);fraseUlt=i;
+  const [fr,em,ks]=FRASES[i];let tent=0,fim=false,ops=false;
+  const pals=fr.split(' ').map(norm);
+  const dest=fr.split(' ').map(w=>ks.some(k=>norm(k[0])===norm(w))?`<b style="color:var(--roxo)">${w}</b>`:w).join(' ');
+  const acha=p=>ks.find(k=>rimaOk(p,norm(k[0]),k[1]));
+  const ex=sorteia(ks),exr=sorteia(ex[1].split(' '));
+  const certas=ks.flatMap(k=>k[1].split(' '));
+  tela(`${voltar('menuPT')}
+  <div class="card"><div class="emoji">${em}</div>
+    <div class="q">${dest}</div>
+    <div style="font-size:16px">Diga uma palavra que <b>rime</b> com uma das palavras roxas!</div>
+    <button class="back" id="ouv">🔊 Ouvir</button>
+    <p><button class="mic" id="mic">🎤</button></p></div>
+  <div class="grid" id="opc" style="grid-template-columns:repeat(3,1fr)"></div>
+  <div class="msg" id="msg"></div>
+  <p style="text-align:center"><button class="back" id="prox">Outra frase ➡</button></p>`);
+  const msg=document.getElementById('msg');
+  const perg=()=>falar(`${fr}. Diga uma palavra que rime com ${ks.map(k=>k[0]).join(' ou ')}.`);
+  perg();document.getElementById('ouv').onclick=perg;document.getElementById('prox').onclick=rimaFrase;
+  const acerto=(p,k)=>{if(fim)return;fim=true;reg('Rimas com frases',fr,true);ganhar();const m=pick(PARABENS_RIMA);
+    msg.textContent=`🎉 ${p} rima com ${k}! ${m}`;falar(`${p} rima com ${k}! ${m}`,()=>setTimeout(rimaFrase,800));};
+  const opcoes=()=>{if(ops)return;ops=true;
+    const ca=sorteia(certas);
+    const dis=embaralha([...new Set(FRASES.flatMap(f=>f[2].flatMap(k=>k[1].split(' '))))]).filter(w=>!certas.includes(w)&&!pals.includes(norm(w))&&!acha(norm(w))).slice(0,2);
+    const box=document.getElementById('opc');
+    box.innerHTML=embaralha([ca,...dis]).map(w=>`<button class="opt" style="font-size:22px" data-w="${w}">${w}</button>`).join('');
+    box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const w=b.dataset.w,k=acha(norm(w||''));if(k)acerto(w,k[0]);else{b.classList.add('no');erro();}});};
+  const erro=()=>{tent++;reg('Rimas com frases',fr,false);
+    if(tent>=3){msg.innerHTML=caixaApoio()+`<div>Exemplo: ${exr} rima com ${ex[0]}</div>`;falar(`${APOIO} Por exemplo: ${exr} rima com ${ex[0]}.`);opcoes();}
+    else if(tent===2){msg.textContent=`Escute com atenção: ${ex[0]}, ${exr}. Rimam! Tente de novo, você consegue!`;falar(`Escute com atenção, Laura. ${ex[0]}, ${exr}. Rimam! Tente de novo, você consegue!`);opcoes();}
+    else{const m=pick(TENTE);msg.textContent=m;falar(m);}};
+  const mic=document.getElementById('mic');
+  mic.onclick=()=>{speechSynthesis.cancel();mic.classList.add('on');
+    ouvirLivre(alts=>{mic.classList.remove('on');
+      if(alts===null){msg.textContent='O microfone não está disponível aqui. Toque na palavra! 👇';falar('Toque na palavra que rima!');opcoes();return;}
+      if(!alts.length){msg.textContent='Não escutei. Aperte o microfone e fale mais alto! 🎤';falar('Não escutei. Aperte o microfone e fale mais alto!');return;}
+      const toks=[...new Set(alts.flatMap(t=>t.split(' ')))].filter(t=>t.length>=3&&!pals.includes(t));
+      for(const t of toks){const k=acha(t);if(k){acerto(t,k[0]);return;}}
+      erro();});};
+}
+
+/* ============ PALAVRAS MÁGICAS ============ */
+const PARABENS_EDU=[
+ 'Parabéns, Laura! Que menina educada! Essa é uma palavra mágica!',
+ 'Muito bem, Laura! Com palavras mágicas todo mundo gosta de você!',
+ 'Isso mesmo, Laura! Você é muito educada!'];
+const MAGICAS=[
+ {f:'Bom dia!',e:'🌅',s:'de manhã',q:'Você encontrou a vovó de manhã. O que você diz?'},
+ {f:'Boa tarde!',e:'☀️',s:'à tarde',q:'Você chegou na escola à tarde e viu a professora. O que você diz?'},
+ {f:'Boa noite!',e:'🌙',s:'à noite',q:'Está na hora de dormir. O que você diz para a mamãe e para o papai?'},
+ {f:'Obrigada!',e:'🎁',s:'quando ganhar algo',q:'Alguém te deu um presente. O que você diz?'},
+ {f:'Por favor',e:'🙏',s:'quando pedir algo',q:'Você quer um copo de água. Que palavra mágica você usa para pedir?'},
+ {f:'Com licença',e:'🚪',s:'para passar',q:'Você precisa passar e tem alguém na sua frente. O que você diz?'},
+ {f:'Desculpa',e:'💛',s:'quando errar',q:'Você esbarrou sem querer em um amigo. O que você diz?'},
+ {f:'De nada',e:'😊',s:'depois do obrigada',q:'Alguém disse obrigada para você. O que você responde?'},
+ {f:'Tchau!',e:'👋',s:'ao ir embora',q:'Você está indo embora da casa da amiga. O que você diz?'},
+ {f:'Adorei te conhecer!',e:'🤝',s:'ao conhecer alguém',q:'Você conheceu uma pessoa nova e foi muito legal. O que você diz?'},
+ {f:'Posso te ajudar?',e:'🤲',s:'para oferecer ajuda',g:'aj',q:'A vovó está carregando sacolas pesadas. O que você pergunta?'},
+ {f:'Você precisa de ajuda?',e:'💪',s:'para oferecer ajuda',g:'aj',q:'Um amiguinho está com dificuldade na lição. O que você pergunta?'},
+ {f:'Pode me ajudar, por favor?',e:'🆘',s:'para pedir ajuda',q:'Você não consegue abrir o pote de biscoito. O que você diz?'},
+ {f:'Feliz aniversário!',e:'🎂',s:'no aniversário de alguém',q:'É o aniversário da sua amiga. O que você diz?'}];
+const diz=(t,f)=>{const ws=norm(f).split(' ');const ts=t.split(' ');return ws.filter(w=>ts.includes(w)).length>=Math.ceil(ws.length*.6);};
+function menuMag(){
+  tela(`${voltar('home')}<h2>✨ Palavras mágicas</h2>
+  <div class="grid">
+    <button class="btn c1" onclick="magicasOuvir()">👂 Aprender</button>
+    <button class="btn c3" onclick="magicasJogo()">🎮 O que eu digo?</button>
+    <button class="btn c5" onclick="magicasFalar()">🎤 Repita comigo</button>
+  </div>`);
+  falar('Palavras mágicas! Elas deixam todo mundo feliz.');
+}
+function magicasOuvir(){
+  tela(`${voltar('menuMag')}<h2>✨ Toque para ouvir</h2>
+  <div class="grid g2">${MAGICAS.map(m=>`<button class="enc" onclick="falar('${m.f}')"><div class="em">${m.e}</div><div class="w">${m.f}</div><div class="t">${m.s}</div></button>`).join('')}</div>`);
+  falar('Toque em uma palavra mágica para ouvir.');
+}
+function magicasJogo(){
+  const m=sorteia(MAGICAS);let tent=0,fim=false;
+  const ops=embaralha([m,...embaralha(MAGICAS.filter(x=>x!==m&&(!m.g||x.g!==m.g))).slice(0,2)]);
+  tela(`${voltar('menuMag')}
+  <div class="card"><div class="emoji">${m.e}</div><div class="q">${m.q}</div><button class="back" id="ouv">🔊 Ouvir</button></div>
+  <div class="grid">${ops.map(x=>`<button class="opt" style="font-size:24px" data-f="${x.f}">${x.f}</button>`).join('')}</div>
+  <div class="msg" id="msg"></div>`);
+  const msg=document.getElementById('msg');
+  document.getElementById('ouv').onclick=()=>falar(m.q);falar(m.q);
+  T.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{if(fim)return;
+    if(b.dataset.f===m.f){fim=true;b.classList.add('ok');reg('Palavras mágicas',m.f,true);ganhar();const t=pick(PARABENS_EDU);
+      msg.textContent='🎉 '+t;falar(`${m.f} ${t}`,()=>setTimeout(magicasJogo,700));}
+    else{b.classList.add('no');tent++;reg('Palavras mágicas',m.f,false);
+      if(tent>=3){msg.innerHTML=caixaApoio();falar(`${APOIO} A palavra mágica é: ${m.f}`);}
+      else{const t=pick(TENTE);msg.textContent=t;falar(t);}}});
+}
+function magicasFalar(){
+  const m=sorteia(MAGICAS);let tent=0,fim=false;
+  tela(`${voltar('menuMag')}
+  <div class="card"><div class="emoji">${m.e}</div><div class="q">${m.q}</div>
+    <div class="q" style="color:var(--roxo)">Diga: ${m.f}</div>
+    <button class="back" id="ouv">🔊 Ouvir</button><p><button class="mic" id="mic">🎤</button></p></div>
+  <div class="msg" id="msg"></div>
+  <p style="text-align:center"><button class="back" id="prox">Outra ➡</button></p>`);
+  const msg=document.getElementById('msg');
+  const perg=()=>falar(`${m.q} Diga: ${m.f}`);perg();
+  document.getElementById('ouv').onclick=perg;document.getElementById('prox').onclick=magicasFalar;
+  const mic=document.getElementById('mic');
+  mic.onclick=()=>{speechSynthesis.cancel();mic.classList.add('on');
+    ouvirLivre(alts=>{mic.classList.remove('on');
+      if(alts===null){msg.textContent='O microfone não está disponível aqui. Toque em Ouvir e repita em voz alta! 🔊';falar('Toque em ouvir e repita em voz alta!');return;}
+      if(!alts.length){msg.textContent='Não escutei. Aperte o microfone e fale mais alto! 🎤';falar('Não escutei. Aperte o microfone e fale mais alto!');return;}
+      if(fim)return;
+      if(alts.some(t=>diz(t,m.f))){fim=true;reg('Palavras mágicas',m.f,true);ganhar();const t=pick(PARABENS_EDU);
+        msg.textContent='🎉 '+t;falar(`${m.f} ${t}`,()=>setTimeout(magicasFalar,800));}
+      else{tent++;reg('Palavras mágicas',m.f,false);
+        if(tent>=3){msg.innerHTML=caixaApoio();falar(`${APOIO} Repita comigo: ${m.f}`);}
+        else{const t=pick(TENTE);msg.textContent=t;falar(`${t} Repita comigo: ${m.f}`);}}});};
+}
+
+/* ============ MACHO E FÊMEA DOS ANIMAIS ============ */
+const PARABENS_GEN=[
+ 'Parabéns, Laura! Você descobriu! Você é uma cientista dos animais!',
+ 'Muito bem, Laura! Você está aprendendo muito sobre os bichinhos!',
+ 'Isso mesmo, Laura! Que esperta!'];
+// t: a = troca a última letra, d = palavra diferente, i = nome igual (macho/fêmea); a = artigo do macho
+const BICHOS=[
+ {m:'gato',f:'gata',e:'🐱',t:'a',a:'o'},{m:'pato',f:'pata',e:'🦆',t:'a',a:'o'},{m:'cachorro',f:'cachorra',e:'🐶',t:'a',a:'o'},
+ {m:'lobo',f:'loba',e:'🐺',t:'a',a:'o'},{m:'urso',f:'ursa',e:'🐻',t:'a',a:'o'},{m:'macaco',f:'macaca',e:'🐵',t:'a',a:'o'},
+ {m:'coelho',f:'coelha',e:'🐰',t:'a',a:'o'},{m:'porco',f:'porca',e:'🐷',t:'a',a:'o'},{m:'elefante',f:'elefanta',e:'🐘',t:'a',a:'o'},
+ {m:'boi',f:'vaca',e:'🐂',e2:'🐄',t:'d',a:'o'},{m:'cavalo',f:'égua',e:'🐴',t:'d',a:'o'},{m:'galo',f:'galinha',e:'🐓',e2:'🐔',t:'d',a:'o'},
+ {m:'carneiro',f:'ovelha',e:'🐏',e2:'🐑',t:'d',a:'o'},{m:'bode',f:'cabra',e:'🐐',t:'d',a:'o'},{m:'leão',f:'leoa',e:'🦁',t:'d',a:'o'},
+ {m:'tigre',f:'tigresa',e:'🐯',e2:'🐅',t:'d',a:'o'},{m:'pavão',f:'pavoa',e:'🦚',t:'d',a:'o'},{m:'cervo',f:'corça',e:'🦌',t:'d',a:'o'},
+ {m:'jacaré',f:'jacaré',e:'🐊',t:'i',a:'o'},{m:'girafa',f:'girafa',e:'🦒',t:'i',a:'a'},{m:'cobra',f:'cobra',e:'🐍',t:'i',a:'a'},
+ {m:'zebra',f:'zebra',e:'🦓',t:'i',a:'a'},{m:'tartaruga',f:'tartaruga',e:'🐢',t:'i',a:'a'},{m:'borboleta',f:'borboleta',e:'🦋',t:'i',a:'a'}];
+const artM=x=>x.a==='o'?'o':'a';
+const labM=x=>x.t==='i'?x.m+' macho':x.m;
+const labF=x=>x.t==='i'?x.m+' fêmea':x.f;
+function fraseBicho(x){
+  if(x.t==='i')return `${x.a==='o'?'O':'A'} ${x.m} pode ser macho ou fêmea. Existe ${artM(x)} ${x.m} macho e ${artM(x)} ${x.m} fêmea. O nome é igual!`;
+  const b=`${x.a==='o'?'O':'A'} ${x.m} é o macho, e a ${x.f} é a fêmea.`;
+  return x.t==='a'?`${b} Só trocamos a última letrinha: ${x.m.slice(-1)} vira ${x.f.slice(-1)}.`:`${b} Olha, a palavra mudou!`;
+}
+function generoFala(i){falar(fraseBicho(BICHOS[i]));}
+function generoMenu(){
+  tela(`${voltar('menuPT')}<h2>🐾 Macho e fêmea</h2>
+  <div class="grid">
+    <button class="btn c1" onclick="generoRegra()">💡 Como é?</button>
+    <button class="btn c4" onclick="generoAprender()">👂 Conhecer os bichinhos</button>
+    <button class="btn c5" onclick="generoJogo()">🔎 Descubra!</button>
+  </div>`);
+  falar('Macho e fêmea! Vamos descobrir como os bichinhos se chamam?');
+}
+function generoRegra(){
+  const txt=['Laura, os animais têm macho e fêmea! O macho é o menino, e a fêmea é a menina.',
+   'Às vezes é só trocar a última letrinha: gato, gata. Pato, pata.',
+   'Mas nem todos são assim! O boi é o macho, e a vaca é a fêmea. O leão é o macho, e a leoa é a fêmea.',
+   'E tem animais com o mesmo nome! Existe o jacaré macho e o jacaré fêmea. A girafa macho e a girafa fêmea.',
+   'Agora, vamos descobrir!'];
+  tela(`${voltar('generoMenu')}<h2>💡 Como é?</h2>
+  <div class="lista" style="text-align:center"><span style="font-size:36px">👦 🐶 ♂️ &nbsp; 👧 🐶 ♀️</span><br>O <b>macho</b> é o menino. A <b>fêmea</b> é a menina.</div>
+  <div class="lista" style="text-align:center"><span style="font-size:34px">🐱 ➜ 🐱</span><br>🔤 <b>Troca a última letrinha</b><br>gat<b>o</b> ➜ gat<b>a</b> · pat<b>o</b> ➜ pat<b>a</b></div>
+  <div class="lista" style="text-align:center"><span style="font-size:34px">🐂 ➜ 🐄</span><br>🔀 <b>A palavra muda</b><br>boi ➜ vaca · leão ➜ leoa</div>
+  <div class="lista" style="text-align:center"><span style="font-size:34px">🐊 🐊</span><br>🟰 <b>O nome é igual</b><br>jacaré macho · jacaré fêmea<br>girafa macho · girafa fêmea</div>
+  <p style="text-align:center"><button class="back" onclick="seq(['${txt.join("','")}'])">🔊 Ouvir de novo</button></p>
+  <p style="text-align:center"><button class="btn c5" onclick="generoJogo()">🔎 Vamos descobrir!</button></p>`);
+  seq(txt);
+}
+function generoAprender(){
+  const grupo=(t,tit)=>`<h3 style="text-align:center;margin:14px 0 4px;color:var(--roxo)">${tit}</h3><div class="grid g2">${BICHOS.map((x,i)=>[x,i]).filter(([x])=>x.t===t).map(([x,i])=>`<button class="enc" onclick="generoFala(${i})"><div class="em">${x.e}${x.e2&&x.e2!==x.e?x.e2:''}</div><div class="w"><span style="color:#2196f3">♂</span> ${x.m}</div><div class="w"><span style="color:#e91e63">♀</span> ${x.t==='i'?x.m:x.f}</div></button>`).join('')}</div>`;
+  tela(`${voltar('generoMenu')}<h2>👂 Toque no bichinho</h2>
+  ${grupo('a','🔤 Só troca a última letrinha')}${grupo('d','🔀 A palavra muda')}${grupo('i','🟰 O nome é igual')}`);
+  falar('Toque em um bichinho para ouvir o macho e a fêmea.');
+}
+function generoJogo(){
+  const x=sorteia(BICHOS),dirF=Math.random()<.5;let tent=0,fim=false;
+  const certa=dirF?labF(x):labM(x),oposta=dirF?labM(x):labF(x);
+  const outro=sorteia(BICHOS.filter(y=>y!==x));
+  const ops=embaralha([certa,oposta,dirF?labF(outro):labM(outro)]);
+  const dd=dirF?(x.a==='o'?'do':'da'):(x.t==='i'?(x.a==='o'?'do':'da'):'da');
+  const nome=dirF?x.m:(x.t==='i'?x.m:x.f);
+  const q=dirF?`Qual é a fêmea ${dd} ${nome}?`:`Qual é o macho ${dd} ${nome}?`;
+  const emo=dirF?x.e:(x.e2||x.e);
+  const dica=x.t==='a'?'Dica: é só trocar a última letrinha!':x.t==='d'?'Dica: a palavra muda bastante!':'Dica: o nome é igual! Só falta dizer macho ou fêmea.';
+  const expl=x.t==='a'?`${x.m}, ${x.f}: só trocamos a última letrinha!`:x.t==='d'?`${x.m} e ${x.f}: a palavra mudou!`:`${x.m} macho e ${x.m} fêmea: o nome é igual!`;
+  tela(`${voltar('generoMenu')}
+  <div class="card"><div class="emoji">${emo}</div><div class="q">${dirF?'♂':'♀'} ${q}</div><button class="back" id="ouv">🔊 Ouvir</button></div>
+  <div class="grid">${ops.map(o=>`<button class="opt" style="font-size:26px" data-r="${o}">${o}</button>`).join('')}</div>
+  <div class="msg" id="msg"></div>`);
+  const msg=document.getElementById('msg');
+  document.getElementById('ouv').onclick=()=>falar(q);falar(q);
+  T.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{if(fim)return;
+    if(b.dataset.r===certa){fim=true;b.classList.add('ok');reg('Macho e fêmea',certa,true);ganhar();const t=pick(PARABENS_GEN);
+      msg.textContent='🎉 '+t+' '+expl;falar(`${certa}! ${t} ${expl}`,()=>setTimeout(generoJogo,900));}
+    else{b.classList.add('no');tent++;reg('Macho e fêmea',certa,false);
+      if(tent>=3){msg.innerHTML=caixaApoio()+`<div>Resposta: ${certa}</div>`;falar(`${APOIO} A resposta é: ${certa}. ${expl}`);}
+      else if(tent===2){msg.textContent=dica;falar(`Escute com atenção, Laura. ${dica}`);}
+      else{const t=pick(TENTE);msg.textContent=t;falar(t);}}});
+}
+
+/* ============ DIÁRIO DA LAURA ============ */
+const CARINHO=['Obrigada por contar, Laura!','Que legal, Laura! Gosto de saber do seu dia!','Muito bem, Laura! Obrigada por me contar!'];
+const DIARIO=[
+ {id:'dia',t:'Dia',q:'Como foi o seu dia hoje?',o:[['😀','Ótimo'],['🙂','Bom'],['😐','Mais ou menos'],['😢','Triste']],
+  r:{'Ótimo':'Que bom, Laura! Fico muito feliz!','Bom':'Que legal, Laura! Um dia bom é muito bom!','Mais ou menos':'Tudo bem, às vezes é assim. Amanhã pode ser melhor!','Triste':'Sinto muito, Laura. Conte para a mamãe ou para o papai, eles vão te dar um abraço!'}},
+ {id:'casa',t:'Casa',q:'Você está na casa da mamãe ou na casa do papai?',o:[['👩','Casa da mamãe'],['👨','Casa do papai'],['🏠','Outro lugar']]},
+ {id:'semana',t:'Semana',q:'Essa semana é de quem?',o:[['👩','Da mamãe'],['👨','Do papai']]},
+ {id:'escola',t:'Escola',q:'Como foi na escola hoje?',o:[['🤩','Muito legal'],['🙂','Foi bom'],['😐','Mais ou menos'],['🏠','Não fui hoje']]},
+ {id:'legal',t:'Mais legal',q:'O que teve de mais legal hoje?',voz:1,o:[['🛝','Recreio'],['👫','Brincar com amigos'],['🎨','Atividade'],['🍎','Lanche']]},
+ {id:'lanche',t:'Lanche',q:'Você gostou do lanche?',o:[['😋','Gostei muito'],['🙂','Mais ou menos'],['🙁','Não gostei']]},
+ {id:'comeu',t:'Comeu',q:'O que você comeu no lanche?',voz:1,o:[['🍎','Fruta'],['🥪','Sanduíche'],['🧃','Suco'],['🍪','Biscoito']]},
+ {id:'amigos',t:'Amigos',q:'Você brincou com algum amiguinho?',o:[['👫','Sim'],['🙂','Brinquei sozinha']]},
+ {id:'ajudou',t:'Ajudou',q:'Você ajudou alguém hoje?',o:[['🤲','Sim'],['🤔','Não lembro']],r:{'Sim':'Parabéns, Laura! Ajudar os outros é lindo!'}},
+ {id:'triste',t:'Chateada',q:'Aconteceu algo que deixou você triste ou chateada?',o:[['😊','Não'],['😢','Sim']],r:{'Sim':'Obrigada por me contar, Laura. Conte para a mamãe ou para o papai, eles vão te ajudar!','Não':'Que bom, Laura!'}},
+ {id:'melhor',t:'Melhor coisa',q:'Qual foi a melhor coisa do seu dia?',voz:1,o:[['🎮','Brincar'],['📚','Aprender'],['🍰','Comer'],['❤️','Ficar com a família']]}];
+const hojeStr=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+function diarioLer(){try{return JSON.parse(localStorage.getItem('ll_diario')||'{}');}catch(e){return {};}}
+function diarioGravar(d){try{localStorage.setItem('ll_diario',JSON.stringify(d));}catch(e){}}
+function diarioSalva(id,v){const d=diarioLer(),h=hojeStr();(d[h]||(d[h]={}))[id]=v;diarioGravar(d);}
+function diario(i){
+  i=i||0;
+  if(i>=DIARIO.length){
+    const d=diarioLer(),h=hojeStr(),dia=d[h]||(d[h]={}),jaTinha=!!dia._ok;dia._ok=1;diarioGravar(d);
+    if(!jaTinha)ganhar();
+    const t=jaTinha?'Parabéns, Laura! Seu diário de hoje está completo!':'Parabéns, Laura! Seu diário de hoje está pronto! Você ganhou uma estrela!';
+    tela(`${voltar('home')}<h2>📔 Diário da Laura</h2><div class="card"><div class="emoji">🌟</div><div class="q">${t}</div></div>`);
+    falar(t+' Até amanhã!');return;
+  }
+  const p=DIARIO[i];let fim=false;
+  tela(`${voltar('home')}<h2>📔 Diário da Laura</h2>
+  <div style="text-align:center;font-size:15px;opacity:.7">Pergunta ${i+1} de ${DIARIO.length}</div>
+  <div class="card"><div class="emoji">📔</div><div class="q">${p.q}</div><button class="back" id="ouv">🔊 Ouvir</button>
+    ${p.voz?'<p><button class="mic" id="mic">🎤</button></p><div style="font-size:16px">Conte com a sua voz, ou toque!</div>':''}</div>
+  <div class="grid g2">${p.o.map(x=>`<button class="opt" style="font-size:20px" data-r="${x[1]}"><span style="font-size:40px">${x[0]}</span><br>${x[1]}</button>`).join('')}</div>
+  <div class="msg" id="msg"></div>
+  <p style="text-align:center"><button class="back" id="pul">Pular ➡</button></p>`);
+  const msg=document.getElementById('msg');
+  const perg=()=>falar(p.q);perg();document.getElementById('ouv').onclick=perg;
+  document.getElementById('pul').onclick=()=>diario(i+1);
+  const resp=(v,fala)=>{if(fim)return;fim=true;diarioSalva(p.id,v);msg.textContent=fala;falar(fala,()=>setTimeout(()=>diario(i+1),500));};
+  T.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const v=b.dataset.r||'';b.classList.add('ok');resp(v,(p.r&&p.r[v])||sorteia(CARINHO));});
+  if(p.voz){const mic=document.getElementById('mic');
+    mic.onclick=()=>{speechSynthesis.cancel();mic.classList.add('on');
+      ouvirLivre(alts=>{mic.classList.remove('on');
+        if(alts===null){msg.textContent='O microfone não está disponível aqui. Toque em uma resposta! 👇';falar('Toque em uma resposta!');return;}
+        if(!alts.length){msg.textContent='Não escutei. Aperte o microfone e conte de novo! 🎤';falar('Não escutei. Aperte o microfone e conte de novo!');return;}
+        resp(alts[0],'Que legal, Laura! Você disse: '+alts[0]+'. '+sorteia(CARINHO));},'pt-BR',true);};}
 }
 
 /* ============ RELÓGIO ============ */
@@ -576,20 +909,25 @@ function pais(){
     else document.getElementById('msg').textContent='Resposta errada.';};
 }
 function zerarStats(){if(confirm('Zerar o histórico de acertos e erros?')){stats={};try{localStorage.removeItem('ll_stats');}catch(e){}paisPainel();}}
-function salvarPremio(){const v=document.getElementById('pr').value.trim();try{localStorage.setItem('ll_premio',v||'um prêmio combinado com a mamãe');}catch(e){}paisPainel();}
+function salvarPremio(){const v=document.getElementById('pr').value.trim(),v2=document.getElementById('pr2').value.trim();try{localStorage.setItem('ll_premio',v||'um prêmio combinado com a mamãe');localStorage.setItem('ll_premio2',v2||'o prêmio número 2 combinado com a mamãe');}catch(e){}paisPainel();}
+function zerarDiario(){if(confirm('Apagar o diário da Laura?')){try{localStorage.removeItem('ll_diario');}catch(e){}paisPainel();}}
 function paisPainel(){
   const ks=Object.keys(stats),porCat={};
   ks.forEach(k=>{const c=k.slice(0,k.indexOf('|')),s=stats[k],x=porCat[c]||(porCat[c]={a:0,e:0});x.a+=s.a;x.e+=s.e;});
   const dif=ks.filter(k=>stats[k].e>0).sort((x,y)=>stats[y].e-stats[x].e).slice(0,8);
+  const dd=diarioLer(),dias=Object.keys(dd).sort().reverse().slice(0,7);
   tela(`${voltar('home')}<h2>👨‍👩‍👧 Área dos pais</h2>
   <div class="lista"><b>⭐ Estrelas:</b> ${estrelas}</div>
   <div class="lista"><b>Acertos e erros por atividade</b><br>${Object.keys(porCat).length?Object.keys(porCat).map(c=>`${c}: ✅ ${porCat[c].a} · ❌ ${porCat[c].e}`).join('<br>'):'Ainda sem dados. Deixe a Laura jogar um pouquinho!'}</div>
   <div class="lista"><b>Onde ela mais erra (vale treinar junto)</b><br>${dif.length?dif.map(k=>`${k.replace('|',' → ')}: ❌ ${stats[k].e} · ✅ ${stats[k].a}`).join('<br>'):'Nenhum erro registrado.'}</div>
-  <div class="lista"><b>Prêmio a cada 50 estrelas</b><br>
+  <div class="lista"><b>📔 Diário da Laura (últimos dias)</b><br>${dias.length?dias.map(k=>`<b>${k.slice(8)}/${k.slice(5,7)}</b>: ${DIARIO.filter(p=>dd[k][p.id]).map(p=>`${p.t}: ${esc(dd[k][p.id])}`).join(' · ')||'sem respostas'}`).join('<br>'):'Ainda sem registros.'}</div>
+  <div class="lista"><b>🏆 Prêmio 1, a cada 50 estrelas</b><br>
     <input id="pr" style="font-size:18px;width:100%;padding:8px;margin:6px 0"><br>
-    <button class="btn c3" style="font-size:18px;padding:10px" onclick="salvarPremio()">Salvar prêmio</button></div>
-  <p style="text-align:center"><button class="back" onclick="zerarStats()">Zerar histórico</button></p>`);
-  document.getElementById('pr').value=premio();
+    <b>🎁 Prêmio 2, ao completar o álbum (200 estrelas)</b><br>
+    <input id="pr2" style="font-size:18px;width:100%;padding:8px;margin:6px 0"><br>
+    <button class="btn c3" style="font-size:18px;padding:10px" onclick="salvarPremio()">Salvar prêmios</button></div>
+  <p style="text-align:center"><button class="back" onclick="zerarStats()">Zerar histórico</button> <button class="back" onclick="zerarDiario()">Apagar diário</button></p>`);
+  document.getElementById('pr').value=premio();document.getElementById('pr2').value=premio2();
 }
 
 home();
