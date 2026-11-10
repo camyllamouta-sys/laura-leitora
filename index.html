@@ -1016,7 +1016,8 @@ function checaAlerta(){try{
   if(h===ALERTA_HOJE){if(min>=21*60+59&&min<23*60&&localStorage.getItem('ll_alerta_forte')!==h){localStorage.setItem('ll_alerta_forte',h);mostraAlerta(true);}return;}
   if(min>=21*60&&min<22*60&&localStorage.getItem('ll_alerta_21')!==h){localStorage.setItem('ll_alerta_21',h);mostraAlerta(false);}
 }catch(e){}}
-if(typeof document.addEventListener==='function'){setInterval(checaAlerta,15000);checaAlerta();}
+if(typeof document.addEventListener==='function'){setInterval(checaAlerta,15000);checaAlerta();
+  try{if(/testealerta/.test(location.search))setTimeout(()=>mostraAlerta(true),1500);}catch(e){}}
 
 /* ============ RELÓGIO ============ */
 const HORAS=['doze','uma','duas','três','quatro','cinco','seis','sete','oito','nove','dez','onze'];
@@ -1108,6 +1109,7 @@ function paisPainel(){
     <b>🎁 Prêmio 2, ao completar o álbum (200 estrelas)</b><br>
     <input id="pr2" style="font-size:18px;width:100%;padding:8px;margin:6px 0"><br>
     <button class="btn c3" style="font-size:18px;padding:10px" onclick="salvarPremio()">Salvar prêmios</button></div>
+  <p style="text-align:center"><button class="back" onclick="mostraAlerta(true)">🚨 Testar alerta forte</button> <button class="back" onclick="mostraAlerta(false)">🌙 Testar aviso suave</button></p>
   <p style="text-align:center"><button class="back" onclick="zerarStats()">Zerar histórico</button> <button class="back" onclick="zerarDiario()">Apagar diário</button></p>`);
   document.getElementById('pr').value=premio();document.getElementById('pr2').value=premio2();
 }
