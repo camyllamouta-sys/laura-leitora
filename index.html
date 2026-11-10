@@ -993,7 +993,7 @@ function diario(i){
 }
 
 /* ============ ALERTA DAS 21H (xixi antes de dormir) ============ */
-const ALERTA_HOJE='2026-11-09'; // estilo ALERTA somente neste dia, às 22:07; nos outros dias, aviso suave às 21:00
+const ALERTA_HOJE='2026-11-09'; // estilo ALERTA somente neste dia, às 21:59; nos outros dias, aviso suave às 21:00
 let wl=null,alTimer=null;
 function sirene(){try{const A=window.AudioContext||window.webkitAudioContext;if(!A)return;const c=new A(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='square';g.gain.value=.2;const t=c.currentTime;for(let k=0;k<6;k++)o.frequency.setValueAtTime(k%2?660:880,t+k*.35);o.start(t);o.stop(t+2.1);}catch(e){}}
 function falaAlerta(txt,fim){const u=new SpeechSynthesisUtterance(txt);u.lang='pt-BR';const vz=vozDe('pt-BR');if(vz)u.voice=vz;u.rate=1.05;u.pitch=1.5;u.volume=1;if(fim)u.onend=fim;speechSynthesis.speak(u);}
@@ -1013,7 +1013,7 @@ function checaAlerta(){try{
   if(document.getElementById('alerta'))return;
   const n=new Date(),h=hojeStr(),min=n.getHours()*60+n.getMinutes();
   if(min>=21*60+30&&min<23*60&&!wl&&navigator.wakeLock){navigator.wakeLock.request('screen').then(x=>{wl=x;}).catch(()=>{});}
-  if(h===ALERTA_HOJE){if(min>=22*60+7&&min<23*60&&localStorage.getItem('ll_alerta_forte')!==h){localStorage.setItem('ll_alerta_forte',h);mostraAlerta(true);}return;}
+  if(h===ALERTA_HOJE){if(min>=21*60+59&&min<23*60&&localStorage.getItem('ll_alerta_forte')!==h){localStorage.setItem('ll_alerta_forte',h);mostraAlerta(true);}return;}
   if(min>=21*60&&min<22*60&&localStorage.getItem('ll_alerta_21')!==h){localStorage.setItem('ll_alerta_21',h);mostraAlerta(false);}
 }catch(e){}}
 if(typeof document.addEventListener==='function'){setInterval(checaAlerta,15000);checaAlerta();}
