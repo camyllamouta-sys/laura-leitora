@@ -132,13 +132,34 @@ function carregarVoz(){
 if('speechSynthesis' in window){carregarVoz();speechSynthesis.onvoiceschanged=carregarVoz;}
 function vozPara(lang){try{const vs=speechSynthesis.getVoices(),L=lang.toLowerCase(),p=L.slice(0,2);
   return vs.find(x=>x.lang.replace('_','-').toLowerCase()===L)||vs.find(x=>x.lang.toLowerCase().startsWith(p))||null;}catch(e){return null;}}
+/* Leitura automática das opções: depois da pergunta, a voz lê cada opção para a Laura escolher */
+let opcoesPend=null,opcoesAtual=null,leituraId=0;
+function vozDe(lang){return /^en/i.test(lang)?vozEN:(/^pt/i.test(lang)?vozPT:vozPara(lang));}
+function lerOpcoes(lista,id,i){
+  if(id!==leituraId||i>=lista.length)return;
+  const [t,lang]=lista[i],u=new SpeechSynthesisUtterance(t);u.lang=lang;
+  const vz=vozDe(lang);if(vz)u.voice=vz;u.rate=0.82;u.pitch=1.15;
+  u.onend=()=>setTimeout(()=>lerOpcoes(lista,id,i+1),250);
+  speechSynthesis.speak(u);
+}
+function coletaOpcoes(){
+  opcoesPend=null;opcoesAtual=null;
+  try{const l=[];
+    T.querySelectorAll('.opt').forEach(b=>{
+      const t=String(b.textContent||'').replace(/[^\p{L}\p{N}\s,.'!?-]/gu,'').replace(/\s+/g,' ').trim();
+      if(t)l.push([t,b.dataset&&b.dataset.en?'en-US':'pt-BR']);});
+    if(l.length>=2&&l.length<=6){l.unshift(['Escolha:','pt-BR']);opcoesAtual=l;opcoesPend=l;}
+  }catch(e){}
+}
+if(typeof document.addEventListener==='function')document.addEventListener('click',e=>{if(e.target&&e.target.id==='ouv')opcoesPend=opcoesAtual;},true);
 function falar(txt,fim,lang){
   if(!('speechSynthesis' in window)){fim&&fim();return;}
   speechSynthesis.cancel();
+  const meu=++leituraId,ops=(!fim&&opcoesPend)?opcoesPend:null;opcoesPend=null;
   const u=new SpeechSynthesisUtterance(txt);
   lang=lang||'pt-BR';u.lang=lang;
-  const vz=/^en/i.test(lang)?vozEN:(/^pt/i.test(lang)?vozPT:vozPara(lang));if(vz)u.voice=vz;u.rate=0.82;u.pitch=1.15;
-  if(fim)u.onend=fim;
+  const vz=vozDe(lang);if(vz)u.voice=vz;u.rate=0.82;u.pitch=1.15;
+  if(fim||ops)u.onend=()=>{if(meu!==leituraId)return;if(fim)fim();else lerOpcoes(ops,meu,0);};
   speechSynthesis.speak(u);
 }
 /* ============ RECONHECIMENTO (voz da Laura) ============ */
@@ -220,7 +241,7 @@ const OBJ=['🌸','🍎','⭐','🐟','🎈','🍓','🚗','🦋'];
 
 /* ============ TELAS ============ */
 const T=document.getElementById('tela');
-function tela(h){speechSynthesis.cancel();T.innerHTML=h;}
+function tela(h){speechSynthesis.cancel();T.innerHTML=h;coletaOpcoes();}
 function voltar(fn,rot){return `<button class="back" onclick="${fn}()">⬅ ${rot||'Voltar'}</button>`;}
 
 function home(){
@@ -622,15 +643,16 @@ function rimaFrase(){
     const dis=embaralha([...new Set(FRASES.flatMap(f=>f[2].flatMap(k=>k[1].split(' '))))]).filter(w=>!certas.includes(w)&&!pals.includes(norm(w))&&!acha(norm(w))).slice(0,2);
     const box=document.getElementById('opc');
     box.innerHTML=embaralha([ca,...dis]).map(w=>`<button class="opt" style="font-size:22px" data-w="${w}">${w}</button>`).join('');
-    box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const w=b.dataset.w,k=acha(norm(w||''));if(k)acerto(w,k[0]);else{b.classList.add('no');erro();}});};
+    box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const w=b.dataset.w,k=acha(norm(w||''));if(k)acerto(w,k[0]);else{b.classList.add('no');erro();}});
+    coletaOpcoes();};
   const erro=()=>{tent++;reg('Rimas com frases',fr,false);
-    if(tent>=3){msg.innerHTML=caixaApoio()+`<div>Exemplo: ${exr} rima com ${ex[0]}</div>`;falar(`${APOIO} Por exemplo: ${exr} rima com ${ex[0]}.`);opcoes();}
-    else if(tent===2){msg.textContent=`Escute com atenção: ${ex[0]}, ${exr}. Rimam! Tente de novo, você consegue!`;falar(`Escute com atenção, Laura. ${ex[0]}, ${exr}. Rimam! Tente de novo, você consegue!`);opcoes();}
+    if(tent>=3){msg.innerHTML=caixaApoio()+`<div>Exemplo: ${exr} rima com ${ex[0]}</div>`;opcoes();falar(`${APOIO} Por exemplo: ${exr} rima com ${ex[0]}.`);}
+    else if(tent===2){msg.textContent=`Escute com atenção: ${ex[0]}, ${exr}. Rimam! Tente de novo, você consegue!`;opcoes();falar(`Escute com atenção, Laura. ${ex[0]}, ${exr}. Rimam! Tente de novo, você consegue!`);}
     else{const m=pick(TENTE);msg.textContent=m;falar(m);}};
   const mic=document.getElementById('mic');
   mic.onclick=()=>{speechSynthesis.cancel();mic.classList.add('on');
     ouvirLivre(alts=>{mic.classList.remove('on');
-      if(alts===null){msg.textContent='O microfone não está disponível aqui. Toque na palavra! 👇';falar('Toque na palavra que rima!');opcoes();return;}
+      if(alts===null){msg.textContent='O microfone não está disponível aqui. Toque na palavra! 👇';opcoes();falar('Toque na palavra que rima!');return;}
       if(!alts.length){msg.textContent='Não escutei. Aperte o microfone e fale mais alto! 🎤';falar('Não escutei. Aperte o microfone e fale mais alto!');return;}
       const toks=[...new Set(alts.flatMap(t=>t.split(' ')))].filter(t=>t.length>=3&&!pals.includes(t));
       for(const t of toks){const k=acha(t);if(k){acerto(t,k[0]);return;}}
