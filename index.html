@@ -130,8 +130,9 @@ let vozPT=null,vozEN=null;
 function carregarVoz(){
   const vs=speechSynthesis.getVoices();
   const v=vs.filter(x=>/^pt/i.test(x.lang));
-  const br=v.filter(x=>/pt[-_]BR/i.test(x.lang));
-  const pref=[/natural|neural|online/i,/francisca/i,/luciana/i,/google/i,/maria/i,/female|feminina/i];
+  const homem=/(male(?!.*female)|masculin|daniel|felipe|ricardo|antonio|ant[oô]nio|donato|thiago|jo[aã]o|HeloisaX)/i;
+  const br0=v.filter(x=>/pt[-_]BR/i.test(x.lang)),br=br0.filter(x=>!homem.test(x.name)||/female/i.test(x.name));
+  const pref=[/francisca/i,/luciana/i,/maria/i,/female|feminina|mulher/i,/natural|neural|online/i,/google/i];
   vozPT=null;for(const r of pref){vozPT=br.find(x=>r.test(x.name));if(vozPT)break;}
   vozPT=vozPT||br[0]||v[0]||null;
   vozEN=vs.find(x=>/^en-US/i.test(x.lang)&&/(female|zira|samantha|jenny|aria|google)/i.test(x.name))||vs.find(x=>/^en/i.test(x.lang))||null;
