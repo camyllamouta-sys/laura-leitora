@@ -927,18 +927,33 @@ const DIARIO=[
  {id:'amigos',t:'Amigos',q:'Você brincou com algum amiguinho?',o:[['👫','Sim'],['🙂','Brinquei sozinha']]},
  {id:'ajudou',t:'Ajudou',q:'Você ajudou alguém hoje?',o:[['🤲','Sim'],['🤔','Não lembro']],r:{'Sim':'Parabéns, Laura! Ajudar os outros é lindo!'}},
  {id:'triste',t:'Chateada',q:'Aconteceu algo que deixou você triste ou chateada?',o:[['😊','Não'],['😢','Sim']],r:{'Sim':'Obrigada por me contar, Laura. Conte para a mamãe ou para o papai, eles vão te ajudar!','Não':'Que bom, Laura!'}},
- {id:'obedeceu',t:'Obedeceu',q:'Você obedeceu a mamãe e o papai hoje?',o:[['😇','Sim'],['😅','Mais ou menos'],['🙈','Hoje não']],r:{'Sim':'Parabéns, Laura! Que menina obediente!','Mais ou menos':'Tudo bem, amanhã você faz ainda melhor!','Hoje não':'Tudo bem, Laura. Amanhã vamos tentar de novo, você consegue!'}},
+ {id:'obedeceu',t:'Obedeceu',q:'Você obedeceu a mamãe, o papai, os mais velhos e a professora hoje?',o:[['😇','Sim'],['😅','Mais ou menos'],['🙈','Hoje não']],r:{'Sim':'Parabéns, Laura! Que menina obediente!','Mais ou menos':'Tudo bem, amanhã você faz ainda melhor!','Hoje não':'Tudo bem, Laura. Amanhã vamos tentar de novo, você consegue!'}},
+ {id:'ligou',t:'Ligou para a mamãe',q:'Você ligou para a mamãe hoje? Ela te ama e sente saudade!',so:['casa','Casa do papai'],o:[['📞','Sim'],['⏰','Vou ligar agora']],r:{'Sim':'Que lindo, Laura! A mamãe ficou feliz!','Vou ligar agora':'Isso, Laura! Vá ligar para a mamãe, ela vai amar!'}},
+ {id:'xixi',t:'Cama sequinha',q:'Ontem à noite você fez xixi antes de deitar e ficou com a cama sequinha?',o:[['🌟','Sim, sequinha'],['🙂','Quase']],r:{'Sim, sequinha':'Parabéns, Laura, por não fazer mais xixi na cama! Você está crescendo!','Quase':'Tudo bem, Laura! Faça xixi antes de deitar, que você consegue!'}},
+ {id:'atendeu',t:'Atendeu ligações',q:'Alguém da família ligou para falar com você? Você atendeu com carinho?',o:[['📞','Sim, atendi'],['🙂','Ninguém ligou']],r:{'Sim, atendi':'Muito bem, Laura! Eles ligam porque te amam muito!'}},
  {id:'licao',t:'Lição',q:'Você fez a lição ou estudou hoje?',o:[['📚','Sim'],['🙂','Um pouquinho'],['🏠','Hoje não tinha']]},
  {id:'dentes',t:'Dentes',q:'Você escovou os dentinhos hoje?',o:[['🦷','Sim'],['🙈','Esqueci']],r:{'Sim':'Muito bem, Laura! Dentinhos limpos!','Esqueci':'Vá escovar agora, Laura! Dentinhos limpinhos sorriem melhor!'}},
  {id:'saudade',t:'Saudade',q:'Você sentiu saudade de alguém hoje?',voz:1,o:[['👩','Da mamãe'],['👨','Do papai'],['👵','Da vovó'],['🙂','De ninguém']]},
  {id:'brincar',t:'Brincadeira favorita',q:'Qual foi a sua brincadeira favorita hoje?',voz:1,o:[['🧸','Brinquedos'],['🎨','Desenhar'],['📱','Vídeos'],['🏃','Correr e pular']]},
  {id:'abraco',t:'Abraço',q:'Você deu um abraço em alguém hoje?',o:[['🤗','Sim'],['🙂','Ainda não']],r:{'Ainda não':'Então dê um abraço bem apertado agora, Laura!','Sim':'Que lindo, Laura! Abraço é amor!'}},
  {id:'melhor',t:'Melhor coisa',q:'Qual foi a melhor coisa do seu dia?',voz:1,o:[['🎮','Brincar'],['📚','Aprender'],['🍰','Comer'],['❤️','Ficar com a família']]}];
-const LEMBRETES=[['🌙','Não esqueça de dormir cedo, para acordar cedo e não chegar atrasada. Nem você, nem a mamãe!'],['👩','Obedeça a mamãe.'],['🤝','Ofereça ajuda às pessoas.'],['🙏','Lembre de rezar e agradecer ao seu anjinho da guarda.']];
-const lembretesHtml=()=>`<div class="lista"><b>🔔 Lembretes da Laura</b>${LEMBRETES.map(x=>`<div style="margin-top:8px"><span style="font-size:28px">${x[0]}</span> ${x[1]}</div>`).join('')}</div>`;
+const LEMBRETES=[
+ ['🦷','Ao acordar, escove os dentes e tome o seu leitinho com Nescau.','☀️ Ao acordar'],
+ ['👗','Vista-se e se arrume como você conseguir, sem a ajuda da mamãe. Mas você pode pedir ajuda sempre, porque a mamãe te ama e para tudo para te ajudar. Ela também precisa se arrumar e tomar café para ir trabalhar.','☀️ Ao acordar'],
+ ['🚽','Faça xixi antes de deitar.','🌙 Antes de dormir'],
+ ['😴','Não esqueça de dormir cedo, para acordar cedo e não chegar atrasada. Nem você, nem a mamãe!','🌙 Antes de dormir'],
+ ['🙏','Lembre de rezar e agradecer ao seu anjinho da guarda.','🌙 Antes de dormir'],
+ ['🎉','Parabéns, Laura, por não fazer mais xixi na cama! Você está crescendo!','🌙 Antes de dormir'],
+ ['👩','Obedeça a mamãe, o papai, os mais velhos e a professora da escola.','💜 Sempre'],
+ ['🤝','Ofereça ajuda às pessoas.','💜 Sempre'],
+ ['📞','Atenda bem todos os familiares que ligarem para falar com você, pois eles ligam porque te amam muito.','💜 Sempre'],
+ ['📲','Quando estiver na casa do papai, lembre de ligar para a mamãe. Ela te ama e sente saudade.','💜 Sempre']];
+const GRUPOS_L=[...new Set(LEMBRETES.map(x=>x[2]))];
+const lembreFalas=()=>['Laura, não esqueça:'].concat(GRUPOS_L.flatMap(g=>[g.replace(/^\S+\s/,'')+':'].concat(LEMBRETES.filter(x=>x[2]===g).map(x=>x[1]))));
+const lembretesHtml=()=>`<div class="lista"><b>🔔 Lembretes da Laura</b>${GRUPOS_L.map(g=>`<div style="margin-top:12px"><b>${g}</b>${LEMBRETES.filter(x=>x[2]===g).map(x=>`<div style="margin-top:8px"><span style="font-size:28px">${x[0]}</span> ${x[1]}</div>`).join('')}</div>`).join('')}</div>`;
 function lembretes(){
   tela(`${voltar('home')}<h2>🔔 Lembretes da Laura</h2>${lembretesHtml()}<p style="text-align:center"><button class="back" id="ouv">🔊 Ouvir</button></p>`);
-  const dizer=()=>seq(['Laura, não esqueça:'].concat(LEMBRETES.map(x=>x[1])));
+  const dizer=()=>seq(lembreFalas());
   dizer();document.getElementById('ouv').onclick=dizer;
 }
 const hojeStr=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
@@ -952,7 +967,7 @@ function diario(i){
     if(!jaTinha)ganhar();
     const t=jaTinha?'Parabéns, Laura! Seu diário de hoje está completo!':'Parabéns, Laura! Seu diário de hoje está pronto! Você ganhou uma estrela!';
     tela(`${voltar('home')}<h2>📔 Diário da Laura</h2><div class="card"><div class="emoji">🌟</div><div class="q">${t}</div></div>${lembretesHtml()}`);
-    seq([t,'Laura, não esqueça:'].concat(LEMBRETES.map(x=>x[1])).concat(['Até amanhã!']));return;
+    seq([t].concat(lembreFalas()).concat(['Até amanhã!']));return;
   }
   const p=DIARIO[i];let fim=false;
   if(p.so){const dd=(diarioLer()[hojeStr()]||{})[p.so[0]];if(dd!==p.so[1]){diario(i+1);return;}}
